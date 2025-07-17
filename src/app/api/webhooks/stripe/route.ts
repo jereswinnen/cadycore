@@ -3,6 +3,8 @@ import { stripe } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
+export const runtime = 'nodejs';
+
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function GET() {
