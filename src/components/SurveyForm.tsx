@@ -45,7 +45,6 @@ export default function SurveyForm({ onSubmit, loading = false, error }: SurveyF
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<SurveyFormData>({
     resolver: zodResolver(surveySchema),
     defaultValues: {
@@ -53,8 +52,6 @@ export default function SurveyForm({ onSubmit, loading = false, error }: SurveyF
       would_recommend: true,
     },
   });
-
-  const satisfactionRating = watch('satisfaction_rating');
 
   return (
     <div className="w-full max-w-2xl mx-auto">

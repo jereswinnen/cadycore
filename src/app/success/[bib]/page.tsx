@@ -8,12 +8,12 @@ interface SuccessPageProps {
   params: Promise<{
     bib: string;
   }>;
-  searchParams: {
+  searchParams: Promise<{
     session_id?: string;
-  };
+  }>;
 }
 
-export default function SuccessPage({ params, searchParams }: SuccessPageProps) {
+export default function SuccessPage({ params }: SuccessPageProps) {
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [access, setAccess] = useState<PhotoAccess | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
       // Clean up
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (err: any) {
+    } catch {
       alert('Failed to download photo. Please try again.');
     }
   };

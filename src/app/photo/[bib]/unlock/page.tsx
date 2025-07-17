@@ -14,7 +14,6 @@ interface UnlockPageProps {
 
 export default function UnlockPage({ params }: UnlockPageProps) {
   const [photo, setPhoto] = useState<Photo | null>(null);
-  const [access, setAccess] = useState<PhotoAccess | null>(null);
   const [loading, setLoading] = useState(true);
   const [surveyLoading, setSurveyLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -35,7 +34,6 @@ export default function UnlockPage({ params }: UnlockPageProps) {
 
         if (data.success && data.data) {
           setPhoto(data.data);
-          setAccess(data.data.access || null);
           
           // If already unlocked, redirect to photo page
           if (data.data.access?.is_unlocked) {
