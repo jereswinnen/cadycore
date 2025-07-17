@@ -5,6 +5,11 @@ import Stripe from 'stripe';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+export async function GET() {
+  // Handle Stripe endpoint verification
+  return NextResponse.json({ message: 'Webhook endpoint is active' });
+}
+
 export async function POST(request: NextRequest) {
   if (!webhookSecret) {
     console.error('Missing STRIPE_WEBHOOK_SECRET');
