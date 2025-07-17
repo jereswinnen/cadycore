@@ -74,7 +74,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Save payment record
-    const { error: paymentError } = await supabase
+    console.log(`Creating payment record with session ID: ${session.id}`);
+    const { data: paymentData, error: paymentError } = await supabase
       .from('payments')
       .insert({
         photo_id: photo_id,
@@ -83,11 +84,14 @@ export async function POST(request: NextRequest) {
         amount: STRIPE_CONFIG.PRICE_AMOUNT,
         currency: STRIPE_CONFIG.CURRENCY,
         status: 'pending'
-      });
+      })
+      .select();
 
     if (paymentError) {
       console.error('Payment record error:', paymentError);
       // Don't fail the request - Stripe session was created successfully
+    } else {
+      console.log('Payment record created successfully:', paymentData);
     }
 
     return NextResponse.json({
