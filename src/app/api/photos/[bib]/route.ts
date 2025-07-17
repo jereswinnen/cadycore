@@ -4,10 +4,11 @@ import { ApiResponse, PhotoWithAccess } from '@/types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bib: string } }
+  { params }: { params: Promise<{ bib: string }> }
 ) {
   try {
-    const bibNumber = params.bib.toUpperCase();
+    const { bib } = await params;
+    const bibNumber = bib.toUpperCase();
 
     // Fetch photo with access information
     const { data: photo, error: photoError } = await supabase

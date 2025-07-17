@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Photo, PhotoAccess } from '@/types';
 
 interface SuccessPageProps {
-  params: {
+  params: Promise<{
     bib: string;
-  };
+  }>;
   searchParams: {
     session_id?: string;
   };
@@ -19,11 +19,12 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { bib } = use(params);
 
   useEffect(() => {
     const fetchPhoto = async () => {
       try {
-        const response = await fetch(`/api/photos/${params.bib}`);
+        const response = await fetch(`/api/photos/${bib}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -44,11 +45,11 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
     };
 
     fetchPhoto();
-  }, [params.bib]);
+  }, [bib]);
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(`/api/download/${params.bib}`);
+      const response = await fetch(`/api/download/${bib}`);
       
       if (!response.ok) {
         throw new Error('Failed to download photo');
@@ -61,7 +62,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
       // Create a temporary link and click it to trigger download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `race-photo-${params.bib}.jpg`;
+      link.download = `race-photo-${bib}.jpg`;
       document.body.appendChild(link);
       link.click();
       
@@ -134,7 +135,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
             </button>
             
             <button
-              onClick={() => router.push(`/photo/${params.bib}`)}
+              onClick={() => router.push(`/photo/${bib}`)}
               className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
             >
               View Photo Details

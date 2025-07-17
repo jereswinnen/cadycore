@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import SurveyForm from '@/components/SurveyForm';
 import { Photo, PhotoAccess, SurveyFormData } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface UnlockPageProps {
-  params: {
+  params: Promise<{
     bib: string;
-  };
+  }>;
 }
 
 export default function UnlockPage({ params }: UnlockPageProps) {
@@ -21,11 +21,12 @@ export default function UnlockPage({ params }: UnlockPageProps) {
   const [error, setError] = useState('');
   const [surveyError, setSurveyError] = useState('');
   const router = useRouter();
+  const { bib } = use(params);
 
   useEffect(() => {
     const fetchPhoto = async () => {
       try {
-        const response = await fetch(`/api/photos/${params.bib}`);
+        const response = await fetch(`/api/photos/${bib}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -38,7 +39,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
           
           // If already unlocked, redirect to photo page
           if (data.data.access?.is_unlocked) {
-            router.push(`/photo/${params.bib}`);
+            router.push(`/photo/${bib}`);
             return;
           }
         } else {
@@ -52,7 +53,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
     };
 
     fetchPhoto();
-  }, [params.bib, router]);
+  }, [bib, router]);
 
   const handleSurveySubmit = async (data: SurveyFormData) => {
     setSurveyLoading(true);
@@ -66,7 +67,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         },
         body: JSON.stringify({
           ...data,
-          bib_number: params.bib,
+          bib_number: bib,
           photo_id: photo?.id,
         }),
       });
@@ -97,7 +98,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          bib_number: params.bib,
+          bib_number: bib,
           photo_id: photo?.id,
         }),
       });
@@ -164,13 +165,13 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         <div className="max-w-4xl mx-auto mb-8">
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => router.push(`/photo/${params.bib}`)}
+              onClick={() => router.push(`/photo/${bib}`)}
               className="text-blue-600 hover:text-blue-800 font-medium"
             >
               ← Back to Photo
             </button>
             <div className="text-sm text-gray-500">
-              Bib #{params.bib}
+              Bib #{bib}
             </div>
           </div>
           

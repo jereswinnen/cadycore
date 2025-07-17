@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import PhotoPreview from '@/components/PhotoPreview';
 import { Photo, PhotoAccess } from '@/types';
 
 interface PhotoPageProps {
-  params: {
+  params: Promise<{
     bib: string;
-  };
+  }>;
 }
 
 export default function PhotoPage({ params }: PhotoPageProps) {
@@ -17,11 +17,12 @@ export default function PhotoPage({ params }: PhotoPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { bib } = use(params);
 
   useEffect(() => {
     const fetchPhoto = async () => {
       try {
-        const response = await fetch(`/api/photos/${params.bib}`);
+        const response = await fetch(`/api/photos/${bib}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -42,11 +43,11 @@ export default function PhotoPage({ params }: PhotoPageProps) {
     };
 
     fetchPhoto();
-  }, [params.bib]);
+  }, [bib]);
 
   const handleUnlock = () => {
     // Navigate to unlock flow (survey + payment)
-    router.push(`/photo/${params.bib}/unlock`);
+    router.push(`/photo/${bib}/unlock`);
   };
 
   if (loading) {
@@ -98,7 +99,7 @@ export default function PhotoPage({ params }: PhotoPageProps) {
               ← Back to Search
             </button>
             <div className="text-sm text-gray-500">
-              Bib #{params.bib}
+              Bib #{bib}
             </div>
           </div>
           
@@ -185,7 +186,7 @@ export default function PhotoPage({ params }: PhotoPageProps) {
               <button
                 onClick={() => {
                   // Handle download
-                  window.open(`/api/download/${params.bib}`, '_blank');
+                  window.open(`/api/download/${bib}`, '_blank');
                 }}
                 className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
               >

@@ -3,10 +3,11 @@ import { supabase } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bib: string } }
+  { params }: { params: Promise<{ bib: string }> }
 ) {
   try {
-    const bibNumber = params.bib.toUpperCase();
+    const { bib } = await params;
+    const bibNumber = bib.toUpperCase();
 
     // Check if photo is unlocked
     const { data: access, error: accessError } = await supabase
