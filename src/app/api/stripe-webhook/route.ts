@@ -83,23 +83,29 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     // Update payment record
     console.log(`Looking for payment record with session ID: ${session.id}`);
-    const { data: paymentData, error: paymentError } = await supabase
-      .from('payments')
-      .update({
-        stripe_payment_intent_id: session.payment_intent as string,
-        status: 'completed',
-        completed_at: new Date().toISOString()
-      })
-      .eq('stripe_session_id', session.id)
-      .select();
+    
+    // Try to update the payment record by ID instead of session ID
+    const paymentRecord = allPayments?.[0];
+    if (paymentRecord) {
+      console.log(`Updating payment record by ID: ${paymentRecord.id}`);
+      const { data: paymentData, error: paymentError } = await supabase
+        .from('payments')
+        .update({
+          stripe_payment_intent_id: session.payment_intent as string,
+          status: 'completed',
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', paymentRecord.id)
+        .select();
 
-    if (paymentError) {
-      console.error('Failed to update payment record:', paymentError);
-    } else {
-      console.log(`Payment records updated:`, paymentData?.length || 0);
-      if (paymentData && paymentData.length === 0) {
-        console.error('No payment record found with session ID:', session.id);
+      if (paymentError) {
+        console.error('Failed to update payment record by ID:', paymentError);
+      } else {
+        console.log(`Payment records updated by ID:`, paymentData?.length || 0);
+        console.log('Updated payment record:', paymentData);
       }
+    } else {
+      console.error('No payment record found to update');
     }
 
     // Update photo access to mark payment as completed and unlock photo
