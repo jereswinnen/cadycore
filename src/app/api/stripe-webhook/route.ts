@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import Stripe from 'stripe';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -69,7 +69,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   try {
     // First, let's see what payment records exist for this bib
     console.log(`Looking for payment records for bib ${bib_number}`);
-    const { data: allPayments, error: allPaymentsError } = await supabase
+    const { data: allPayments, error: allPaymentsError } = await supabaseAdmin
       .from('payments')
       .select('*')
       .eq('bib_number', bib_number);
@@ -88,7 +88,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     const paymentRecord = allPayments?.[0];
     if (paymentRecord) {
       console.log(`Updating payment record by ID: ${paymentRecord.id}`);
-      const { data: paymentData, error: paymentError } = await supabase
+      const { data: paymentData, error: paymentError } = await supabaseAdmin
         .from('payments')
         .update({
           stripe_payment_intent_id: session.payment_intent as string,
@@ -109,7 +109,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     // Update photo access to mark payment as completed and unlock photo
-    const { error: accessError } = await supabase
+    const { error: accessError } = await supabaseAdmin
       .from('photo_access')
       .update({
         payment_completed: true,
@@ -133,7 +133,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   console.log(`Payment succeeded: ${paymentIntent.id}`);
   
   // Update payment status if needed
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('payments')
     .update({
       status: 'completed',
@@ -150,7 +150,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   console.log(`Payment failed: ${paymentIntent.id}`);
   
   // Update payment status
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('payments')
     .update({
       status: 'failed'
