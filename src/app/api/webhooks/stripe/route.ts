@@ -11,6 +11,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🔥 Webhook POST handler called');
+  
   if (!webhookSecret) {
     console.error('Missing STRIPE_WEBHOOK_SECRET');
     return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
@@ -34,14 +36,19 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    console.log(`🎯 Processing event: ${event.type}`);
+    
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log('💳 Handling checkout session completed');
         await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
         break;
       case 'payment_intent.succeeded':
+        console.log('✅ Handling payment intent succeeded');
         await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
         break;
       case 'payment_intent.payment_failed':
+        console.log('❌ Handling payment intent failed');
         await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
         break;
       default:
