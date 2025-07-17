@@ -11,7 +11,10 @@ const surveySchema = z.object({
   runner_email: z.string().min(1, 'Email is required').refine(validateEmail, 'Invalid email format'),
   age_group: z.string().min(1, 'Age group is required'),
   race_experience: z.string().min(1, 'Race experience is required'),
-  satisfaction_rating: z.string().min(1, 'Rating is required').transform((val) => parseInt(val, 10)).refine((val) => val >= 1 && val <= 5, 'Rating must be between 1 and 5'),
+  satisfaction_rating: z.string().min(1, 'Rating is required').refine((val) => {
+    const num = parseInt(val, 10);
+    return !isNaN(num) && num >= 1 && num <= 5;
+  }, 'Rating must be between 1 and 5'),
   would_recommend: z.boolean(),
   feedback: z.string().max(500, 'Feedback must be less than 500 characters').optional(),
   marketing_consent: z.boolean(),
@@ -63,7 +66,13 @@ export default function SurveyForm({ onSubmit, loading = false, error }: SurveyF
           Please complete this quick survey to unlock your photo.
         </p>
 
-        <form onSubmit={handleSubmit((data) => onSubmit(data as SurveyFormData))} className="space-y-6">
+        <form onSubmit={handleSubmit((data) => {
+          const formData: SurveyFormData = {
+            ...data,
+            satisfaction_rating: parseInt(data.satisfaction_rating, 10)
+          };
+          onSubmit(formData);
+        })} className="space-y-6">
           {/* Name */}
           <div>
             <label htmlFor="runner_name" className="block text-sm font-medium text-gray-700 mb-2">
