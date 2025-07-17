@@ -67,6 +67,20 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   try {
+    // First, let's see what payment records exist for this bib
+    console.log(`Looking for payment records for bib ${bib_number}`);
+    const { data: allPayments, error: allPaymentsError } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('bib_number', bib_number);
+
+    if (allPaymentsError) {
+      console.error('Error fetching payment records:', allPaymentsError);
+    } else {
+      console.log(`Found ${allPayments?.length || 0} payment records for bib ${bib_number}`);
+      console.log('Payment records:', allPayments);
+    }
+
     // Update payment record
     console.log(`Looking for payment record with session ID: ${session.id}`);
     const { data: paymentData, error: paymentError } = await supabase
