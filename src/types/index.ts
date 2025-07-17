@@ -61,6 +61,17 @@ export interface SurveyFormData {
   marketing_consent: boolean;
 }
 
+export interface SurveyFormInput {
+  runner_name: string;
+  runner_email: string;
+  age_group: string;
+  race_experience: string;
+  satisfaction_rating: string;
+  would_recommend: boolean;
+  feedback?: string;
+  marketing_consent: boolean;
+}
+
 export interface ApiResponse<T> {
   data?: T;
   error?: string;

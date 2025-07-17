@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { SurveyFormData, AgeGroup, RaceExperience } from '@/types';
+import { SurveyFormData, SurveyFormInput, AgeGroup, RaceExperience } from '@/types';
 import { validateEmail } from '@/lib/utils';
 
 const surveySchema = z.object({
@@ -45,7 +45,7 @@ export default function SurveyForm({ onSubmit, loading = false, error }: SurveyF
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SurveyFormData>({
+  } = useForm<SurveyFormInput>({
     resolver: zodResolver(surveySchema),
     defaultValues: {
       marketing_consent: false,
@@ -63,7 +63,7 @@ export default function SurveyForm({ onSubmit, loading = false, error }: SurveyF
           Please complete this quick survey to unlock your photo.
         </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit((data) => onSubmit(data as SurveyFormData))} className="space-y-6">
           {/* Name */}
           <div>
             <label htmlFor="runner_name" className="block text-sm font-medium text-gray-700 mb-2">
