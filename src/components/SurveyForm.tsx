@@ -11,7 +11,7 @@ const surveySchema = z.object({
   runner_email: z.string().min(1, 'Email is required').refine(validateEmail, 'Invalid email format'),
   age_group: z.string().min(1, 'Age group is required'),
   race_experience: z.string().min(1, 'Race experience is required'),
-  satisfaction_rating: z.number().min(1, 'Rating is required').max(5, 'Rating must be between 1 and 5'),
+  satisfaction_rating: z.string().min(1, 'Rating is required').transform((val) => parseInt(val, 10)).refine((val) => val >= 1 && val <= 5, 'Rating must be between 1 and 5'),
   would_recommend: z.boolean(),
   feedback: z.string().max(500, 'Feedback must be less than 500 characters').optional(),
   marketing_consent: z.boolean(),
@@ -158,7 +158,7 @@ export default function SurveyForm({ onSubmit, loading = false, error }: SurveyF
                   <input
                     type="radio"
                     value={rating}
-                    {...register('satisfaction_rating', { valueAsNumber: true })}
+                    {...register('satisfaction_rating')}
                     className="mr-2"
                     disabled={loading}
                   />
