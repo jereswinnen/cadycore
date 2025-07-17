@@ -7,14 +7,17 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function GET() {
   console.log('🔥 Webhook GET handler called');
+  console.log('📅 Timestamp:', new Date().toISOString());
   // Handle Stripe endpoint verification
   return NextResponse.json({ message: 'Webhook endpoint is active' }, { status: 200 });
 }
 
 export async function POST(request: NextRequest) {
   console.log('🔥 Webhook POST handler called');
+  console.log('📅 Timestamp:', new Date().toISOString());
   console.log('📍 Request URL:', request.url);
   console.log('📍 Request method:', request.method);
+  console.log('📍 Request headers:', Object.fromEntries(request.headers.entries()));
   
   if (!webhookSecret) {
     console.error('Missing STRIPE_WEBHOOK_SECRET');
@@ -140,4 +143,23 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   if (error) {
     console.error('Failed to update payment status:', error);
   }
+}
+
+// Add handlers for other HTTP methods to debug what's being called
+export async function PUT(request: NextRequest) {
+  console.log('🔥 Webhook PUT handler called - This should not happen');
+  console.log('📅 Timestamp:', new Date().toISOString());
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+}
+
+export async function DELETE(request: NextRequest) {
+  console.log('🔥 Webhook DELETE handler called - This should not happen');
+  console.log('📅 Timestamp:', new Date().toISOString());
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+}
+
+export async function PATCH(request: NextRequest) {
+  console.log('🔥 Webhook PATCH handler called - This should not happen');
+  console.log('📅 Timestamp:', new Date().toISOString());
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
