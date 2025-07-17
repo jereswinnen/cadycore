@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import SurveyForm from '@/components/SurveyForm';
-import { Photo, PhotoAccess, SurveyFormData } from '@/types';
+import { Photo, SurveyFormData } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface UnlockPageProps {

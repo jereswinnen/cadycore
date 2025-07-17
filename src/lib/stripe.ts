@@ -12,5 +12,5 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export const STRIPE_CONFIG = {
   PRICE_AMOUNT: 1000, // $10.00 in cents
   CURRENCY: 'usd',
-  PAYMENT_METHOD_TYPES: ['card'],
-} as const;
+  PAYMENT_METHOD_TYPES: ['card'] as const,
+};
