@@ -3,29 +3,26 @@ import { stripe } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
-export const runtime = 'nodejs';
-
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-console.log('🚀 Webhook route file loaded at:', new Date().toISOString());
+console.log('🚀 Stripe webhook route loaded at:', new Date().toISOString());
 
 export async function GET(request: NextRequest) {
-  console.log('🔥 Webhook GET handler called');
+  console.log('🔥 Stripe webhook GET handler called');
   console.log('📅 Timestamp:', new Date().toISOString());
   console.log('📍 Request URL:', request.url);
   
   return NextResponse.json({ 
-    message: 'Webhook endpoint is active',
+    message: 'Stripe webhook endpoint is active',
     timestamp: new Date().toISOString()
   }, { status: 200 });
 }
 
 export async function POST(request: NextRequest) {
-  console.log('🔥 Webhook POST handler called');
+  console.log('🔥 Stripe webhook POST handler called');
   console.log('📅 Timestamp:', new Date().toISOString());
   console.log('📍 Request URL:', request.url);
   console.log('📍 Request method:', request.method);
-  console.log('📍 Request headers:', Object.fromEntries(request.headers.entries()));
   
   if (!webhookSecret) {
     console.error('❌ Missing STRIPE_WEBHOOK_SECRET');
@@ -175,26 +172,4 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   } else {
     console.log('✅ Payment failure status updated successfully');
   }
-}
-
-// Add handlers for other HTTP methods to debug unexpected calls
-export async function PUT(request: NextRequest) {
-  console.log('🔥 Webhook PUT handler called - This should not happen');
-  console.log('📅 Timestamp:', new Date().toISOString());
-  console.log('📍 Request URL:', request.url);
-  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
-}
-
-export async function DELETE(request: NextRequest) {
-  console.log('🔥 Webhook DELETE handler called - This should not happen');
-  console.log('📅 Timestamp:', new Date().toISOString());
-  console.log('📍 Request URL:', request.url);
-  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
-}
-
-export async function PATCH(request: NextRequest) {
-  console.log('🔥 Webhook PATCH handler called - This should not happen');
-  console.log('📅 Timestamp:', new Date().toISOString());
-  console.log('📍 Request URL:', request.url);
-  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
