@@ -11,6 +11,8 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@supabase/supabase-js": "^2.51.0",
+    "@types/archiver": "^6.0.3",
+    "archiver": "^7.0.1",
     "clsx": "^2.1.1",
     "next": "15.4.1",
     "react": "19.1.0",

@@ -18,6 +18,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
+  const [downloadingAll, setDownloadingAll] = useState(false);
   const router = useRouter();
   const { bib } = use(params);
 
@@ -104,6 +105,40 @@ export default function SuccessPage({ params }: SuccessPageProps) {
     }
   };
 
+  const handleDownloadAll = async () => {
+    setDownloadingAll(true);
+    try {
+      const response = await fetch(`/api/download/${bib}/zip`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to download photos');
+      }
+
+      // Create a blob from the response
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and click it to trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `race-photos-${bib}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      // Refresh photos data to update download counters
+      await refreshPhotosData();
+    } catch (error) {
+      console.error('Download all error:', error);
+      alert('Failed to download photos. Please try again.');
+    } finally {
+      setDownloadingAll(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -156,16 +191,40 @@ export default function SuccessPage({ params }: SuccessPageProps) {
               Thank you for your purchase. Your {photos.length} photo{photos.length !== 1 ? 's have' : ' has'} been unlocked and {photos.length !== 1 ? 'are' : 'is'} ready for download.
             </p>
             
-            <div className="text-sm text-green-600 mb-4">
+            <div className="text-sm text-green-600 mb-6">
               Bib #{bib} • {photos.length} Photo{photos.length !== 1 ? 's' : ''} Unlocked
             </div>
             
-            <button
-              onClick={() => router.push(`/photo/${bib}`)}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
-            >
-              View All Photos
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {photos.length > 1 && (
+                <button
+                  onClick={handleDownloadAll}
+                  disabled={downloadingAll}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  {downloadingAll ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Creating Zip...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Download All ({photos.length} photos)
+                    </>
+                  )}
+                </button>
+              )}
+              
+              <button
+                onClick={() => router.push(`/photo/${bib}`)}
+                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+              >
+                View All Photos
+              </button>
+            </div>
           </div>
 
           {/* Photos Grid */}
