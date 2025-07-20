@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Photo, PhotoAccess } from '@/types';
+import { PhotoWithAccess } from '@/types';
 
 interface SuccessPageProps {
   params: Promise<{
@@ -14,28 +14,35 @@ interface SuccessPageProps {
 }
 
 export default function SuccessPage({ params }: SuccessPageProps) {
-  const [photo, setPhoto] = useState<Photo | null>(null);
-  const [access, setAccess] = useState<PhotoAccess | null>(null);
+  const [photos, setPhotos] = useState<PhotoWithAccess[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
   const router = useRouter();
   const { bib } = use(params);
 
   useEffect(() => {
-    const fetchPhoto = async () => {
+    const fetchPhotos = async () => {
       try {
         const response = await fetch(`/api/photos/${bib}`);
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to load photo');
+          throw new Error(data.error || 'Failed to load photos');
         }
 
         if (data.success && data.data) {
-          setPhoto(data.data);
-          setAccess(data.data.access || null);
+          // Only show unlocked photos
+          const unlockedPhotos = data.data.photos.filter((photo: PhotoWithAccess) => 
+            photo.access?.is_unlocked
+          );
+          setPhotos(unlockedPhotos);
+          
+          if (unlockedPhotos.length === 0) {
+            setError('No unlocked photos found');
+          }
         } else {
-          setError('Photo not found');
+          setError('Photos not found');
         }
       } catch (err: any) {
         setError(err.message || 'An error occurred');
@@ -44,12 +51,13 @@ export default function SuccessPage({ params }: SuccessPageProps) {
       }
     };
 
-    fetchPhoto();
+    fetchPhotos();
   }, [bib]);
 
-  const handleDownload = async () => {
+  const handleDownload = async (photoId: string) => {
+    setDownloadingPhotoId(photoId);
     try {
-      const response = await fetch(`/api/download/${bib}`);
+      const response = await fetch(`/api/download/${bib}?photo_id=${photoId}`);
       
       if (!response.ok) {
         throw new Error('Failed to download photo');
@@ -62,15 +70,37 @@ export default function SuccessPage({ params }: SuccessPageProps) {
       // Create a temporary link and click it to trigger download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `race-photo-${bib}.jpg`;
+      link.download = `race-photo-${bib}-${photoId.slice(-8)}.jpg`;
       document.body.appendChild(link);
       link.click();
       
       // Clean up
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch {
+      
+      // Refresh photos data to update download counters
+      await refreshPhotosData();
+    } catch (error) {
+      console.error('Download error:', error);
       alert('Failed to download photo. Please try again.');
+    } finally {
+      setDownloadingPhotoId(null);
+    }
+  };
+
+  const refreshPhotosData = async () => {
+    try {
+      const response = await fetch(`/api/photos/${bib}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const unlockedPhotos = data.data.photos.filter((photo: PhotoWithAccess) => 
+          photo.access?.is_unlocked
+        );
+        setPhotos(unlockedPhotos);
+      }
+    } catch (error) {
+      console.error('Error refreshing photos data:', error);
     }
   };
 
@@ -85,7 +115,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
     );
   }
 
-  if (error || !photo) {
+  if (error || photos.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center">
@@ -94,7 +124,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
               Error
             </h2>
             <p className="text-red-600 mb-4">
-              {error || 'Something went wrong.'}
+              {error || 'No unlocked photos found.'}
             </p>
             <button
               onClick={() => router.push('/')}
@@ -111,7 +141,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Success Message */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-8 mb-8 text-center">
             <div className="mb-4">
@@ -123,34 +153,72 @@ export default function SuccessPage({ params }: SuccessPageProps) {
               Payment Successful!
             </h1>
             <p className="text-green-700 mb-6">
-              Thank you for your purchase. Your photo has been unlocked and is ready for download.
+              Thank you for your purchase. Your {photos.length} photo{photos.length !== 1 ? 's have' : ' has'} been unlocked and {photos.length !== 1 ? 'are' : 'is'} ready for download.
             </p>
             
-            {/* Download Button */}
-            <button
-              onClick={handleDownload}
-              className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors mr-4"
-            >
-              Download High-Resolution Photo
-            </button>
+            <div className="text-sm text-green-600 mb-4">
+              Bib #{bib} • {photos.length} Photo{photos.length !== 1 ? 's' : ''} Unlocked
+            </div>
             
             <button
               onClick={() => router.push(`/photo/${bib}`)}
               className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
             >
-              View Photo Details
+              View All Photos
             </button>
           </div>
 
-          {/* Photo Details */}
+          {/* Photos Grid */}
           <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Your Photo Details
+              Your Photos ({photos.length})
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {photos.map((photo, index) => (
+                <div key={photo.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="relative">
+                    <img
+                      src={photo.preview_url}
+                      alt={`Photo ${index + 1}`}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      Photo {index + 1}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <div>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Unlocked
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Downloads: {photo.access?.download_count || 0}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDownload(photo.id)}
+                      disabled={downloadingPhotoId === photo.id}
+                      className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      {downloadingPhotoId === photo.id ? 'Downloading...' : 'Download High-Res'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Purchase Summary */}
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Purchase Summary
             </h2>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <h3 className="font-medium text-gray-700 mb-1">Bib Number</h3>
-                <p className="text-gray-900">{photo.bib_number}</p>
+                <p className="text-gray-900">{bib}</p>
               </div>
               <div>
                 <h3 className="font-medium text-gray-700 mb-1">Purchase Date</h3>
@@ -163,14 +231,12 @@ export default function SuccessPage({ params }: SuccessPageProps) {
                 </p>
               </div>
               <div>
-                <h3 className="font-medium text-gray-700 mb-1">Status</h3>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Unlocked
-                </span>
+                <h3 className="font-medium text-gray-700 mb-1">Photos Purchased</h3>
+                <p className="text-gray-900">{photos.length}</p>
               </div>
               <div>
-                <h3 className="font-medium text-gray-700 mb-1">Downloads</h3>
-                <p className="text-gray-900">{access?.download_count || 0}</p>
+                <h3 className="font-medium text-gray-700 mb-1">Total Downloads</h3>
+                <p className="text-gray-900">{photos.reduce((total, photo) => total + (photo.access?.download_count || 0), 0)}</p>
               </div>
             </div>
           </div>

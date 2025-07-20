@@ -59,10 +59,18 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  const { bib_number, photo_id } = session.metadata || {};
+  const { bib_number, selected_photo_ids, photo_count } = session.metadata || {};
 
-  if (!bib_number || !photo_id) {
+  if (!bib_number || !selected_photo_ids) {
     console.error('Missing metadata in checkout session:', session.id);
+    return;
+  }
+
+  let photoIds: string[];
+  try {
+    photoIds = JSON.parse(selected_photo_ids);
+  } catch (error) {
+    console.error('Error parsing selected_photo_ids:', error);
     return;
   }
 
@@ -84,46 +92,64 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     // Update payment record
     console.log(`Looking for payment record with session ID: ${session.id}`);
     
-    // Try to update the payment record by ID instead of session ID
-    const paymentRecord = allPayments?.[0];
-    if (paymentRecord) {
-      console.log(`Updating payment record by ID: ${paymentRecord.id}`);
-      const { data: paymentData, error: paymentError } = await supabaseAdmin
-        .from('payments')
-        .update({
-          stripe_payment_intent_id: session.payment_intent as string,
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', paymentRecord.id)
-        .select();
+    // Try to update the payment record by session ID
+    const { data: paymentData, error: paymentError } = await supabaseAdmin
+      .from('payments')
+      .update({
+        stripe_payment_intent_id: session.payment_intent as string,
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      })
+      .eq('stripe_session_id', session.id)
+      .select();
 
-      if (paymentError) {
-        console.error('Failed to update payment record by ID:', paymentError);
-      } else {
-        console.log(`Payment records updated by ID:`, paymentData?.length || 0);
-        console.log('Updated payment record:', paymentData);
-      }
+    if (paymentError) {
+      console.error('Failed to update payment record:', paymentError);
     } else {
-      console.error('No payment record found to update');
+      console.log(`Payment records updated:`, paymentData?.length || 0);
+      console.log('Updated payment record:', paymentData);
     }
 
-    // Update photo access to mark payment as completed and unlock photo
-    const { error: accessError } = await supabaseAdmin
+    // Update photo access for all selected photos
+    console.log(`Updating photo access for ${photoIds.length} photos`);
+    const { data: accessData, error: accessError } = await supabaseAdmin
       .from('photo_access')
       .update({
         payment_completed: true,
         is_unlocked: true,
         unlocked_at: new Date().toISOString()
       })
-      .eq('photo_id', photo_id)
-      .eq('bib_number', bib_number);
+      .in('photo_id', photoIds)
+      .eq('bib_number', bib_number)
+      .select();
 
     if (accessError) {
       console.error('Failed to update photo access:', accessError);
+    } else {
+      console.log(`Updated ${accessData?.length || 0} photo access records`);
     }
 
-    console.log(`Payment completed for bib ${bib_number}, photo ${photo_id}`);
+    // Create order items for tracking individual photo purchases
+    if (paymentData && paymentData.length > 0) {
+      const payment = paymentData[0];
+      const orderItems = photoIds.map(photoId => ({
+        payment_id: payment.id,
+        photo_id: photoId,
+        price_paid: payment.price_per_photo
+      }));
+
+      const { error: orderError } = await supabaseAdmin
+        .from('order_items')
+        .insert(orderItems);
+
+      if (orderError) {
+        console.error('Failed to create order items:', orderError);
+      } else {
+        console.log(`Created ${orderItems.length} order items`);
+      }
+    }
+
+    console.log(`Payment completed for bib ${bib_number}, ${photoIds.length} photos unlocked`);
   } catch (error) {
     console.error('Error processing completed checkout:', error);
   }

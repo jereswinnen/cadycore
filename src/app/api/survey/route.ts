@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { ApiResponse } from '@/types';
+import { ApiResponse, SurveyFormData } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const {
-      bib_number,
-      photo_id,
+    const { 
+      bib_number, 
+      selected_photo_ids,
       runner_name,
       runner_email,
       age_group,
@@ -17,75 +16,97 @@ export async function POST(request: NextRequest) {
       would_recommend,
       feedback,
       marketing_consent
-    } = body;
+    }: SurveyFormData & { bib_number: string } = body;
 
     // Validate required fields
-    if (!bib_number || !photo_id || !runner_name || !runner_email) {
+    if (!bib_number || !Array.isArray(selected_photo_ids) || selected_photo_ids.length === 0 || 
+        !runner_name || !runner_email || !age_group || !race_experience || !satisfaction_rating) {
       return NextResponse.json({
         success: false,
         error: 'Missing required fields'
       } as ApiResponse<null>, { status: 400 });
     }
 
-    // Check if photo exists
-    const { data: photo, error: photoError } = await supabase
-      .from('photos')
-      .select('id')
-      .eq('id', photo_id)
-      .eq('bib_number', bib_number.toUpperCase())
-      .single();
+    const bibNumberUpper = bib_number.toUpperCase();
 
-    if (photoError || !photo) {
+    // Check if photos exist and belong to this bib number
+    const { data: photos, error: photoError } = await supabase
+      .from('photos')
+      .select('id, bib_number')
+      .in('id', selected_photo_ids)
+      .eq('bib_number', bibNumberUpper);
+
+    if (photoError || !photos || photos.length !== selected_photo_ids.length) {
       return NextResponse.json({
         success: false,
-        error: 'Photo not found'
-      } as ApiResponse<null>, { status: 404 });
+        error: 'Invalid photos selected or photos do not belong to this bib number'
+      } as ApiResponse<null>, { status: 400 });
     }
 
-    // Insert survey response
-    const { data: surveyResponse, error: surveyError } = await supabase
+    // Check if survey already exists for this bib
+    const { data: existingSurvey, error: existingError } = await supabase
+      .from('survey_responses')
+      .select('id')
+      .eq('bib_number', bibNumberUpper)
+      .single();
+
+    if (existingError && existingError.code !== 'PGRST116') {
+      console.error('Existing survey check error:', existingError);
+      return NextResponse.json({
+        success: false,
+        error: 'Error checking existing survey'
+      } as ApiResponse<null>, { status: 500 });
+    }
+
+    if (existingSurvey) {
+      return NextResponse.json({
+        success: false,
+        error: 'Survey already completed for this bib number'
+      } as ApiResponse<null>, { status: 400 });
+    }
+
+    // Save survey response
+    const { data: surveyData, error: surveyError } = await supabase
       .from('survey_responses')
       .insert({
-        photo_id,
-        bib_number: bib_number.toUpperCase(),
+        bib_number: bibNumberUpper,
+        selected_photo_ids: selected_photo_ids,
         runner_name,
         runner_email,
         age_group,
         race_experience,
-        satisfaction_rating: parseInt(satisfaction_rating),
-        would_recommend: Boolean(would_recommend),
+        satisfaction_rating,
+        would_recommend,
         feedback: feedback || null,
-        marketing_consent: Boolean(marketing_consent)
+        marketing_consent: marketing_consent || false
       })
       .select()
       .single();
 
     if (surveyError) {
-      console.error('Survey insertion error:', surveyError);
+      console.error('Survey save error:', surveyError);
       return NextResponse.json({
         success: false,
         error: 'Failed to save survey response'
       } as ApiResponse<null>, { status: 500 });
     }
 
-    // Update photo access to mark survey as completed
+    // Update photo access to mark survey as completed for all selected photos
     const { error: accessError } = await supabase
       .from('photo_access')
-      .update({
-        survey_completed: true
-      })
-      .eq('photo_id', photo_id)
-      .eq('bib_number', bib_number.toUpperCase());
+      .update({ survey_completed: true })
+      .in('photo_id', selected_photo_ids)
+      .eq('bib_number', bibNumberUpper);
 
     if (accessError) {
-      console.error('Access update error:', accessError);
+      console.error('Photo access update error:', accessError);
       // Don't fail the request - survey was saved successfully
     }
 
     return NextResponse.json({
       success: true,
-      data: surveyResponse
-    } as ApiResponse<typeof surveyResponse>);
+      data: surveyData
+    } as ApiResponse<any>);
 
   } catch (error) {
     console.error('Survey API error:', error);

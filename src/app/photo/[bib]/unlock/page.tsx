@@ -3,8 +3,8 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import SurveyForm from '@/components/SurveyForm';
-import { Photo, SurveyFormData } from '@/types';
-import { formatCurrency } from '@/lib/utils';
+import { PhotosWithSelections, SurveyFormData } from '@/types';
+import { formatPrice } from '@/lib/pricing';
 
 interface UnlockPageProps {
   params: Promise<{
@@ -13,7 +13,7 @@ interface UnlockPageProps {
 }
 
 export default function UnlockPage({ params }: UnlockPageProps) {
-  const [photo, setPhoto] = useState<Photo | null>(null);
+  const [photosData, setPhotosData] = useState<PhotosWithSelections | null>(null);
   const [loading, setLoading] = useState(true);
   const [surveyLoading, setSurveyLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -23,25 +23,26 @@ export default function UnlockPage({ params }: UnlockPageProps) {
   const { bib } = use(params);
 
   useEffect(() => {
-    const fetchPhoto = async () => {
+    const fetchPhotos = async () => {
       try {
         const response = await fetch(`/api/photos/${bib}`);
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to load photo');
+          throw new Error(data.error || 'Failed to load photos');
         }
 
         if (data.success && data.data) {
-          setPhoto(data.data);
+          setPhotosData(data.data);
           
-          // If already unlocked, redirect to photo page
-          if (data.data.access?.is_unlocked) {
+          // If all photos are already unlocked, redirect to photo page
+          const allUnlocked = data.data.photos.every((photo: any) => photo.access?.is_unlocked);
+          if (allUnlocked && data.data.photos.length > 0) {
             router.push(`/photo/${bib}`);
             return;
           }
         } else {
-          setError('Photo not found');
+          setError('No photos found');
         }
       } catch (err: any) {
         setError(err.message || 'An error occurred');
@@ -50,14 +51,28 @@ export default function UnlockPage({ params }: UnlockPageProps) {
       }
     };
 
-    fetchPhoto();
+    fetchPhotos();
   }, [bib, router]);
+
+  const selectedPhotoIds = photosData?.selections
+    ?.filter(selection => selection.is_selected)
+    ?.map(selection => selection.photo_id) || [];
+
+  const selectedPhotos = photosData?.photos?.filter(photo => 
+    selectedPhotoIds.includes(photo.id)
+  ) || [];
 
   const handleSurveySubmit = async (data: SurveyFormData) => {
     setSurveyLoading(true);
     setSurveyError('');
 
     try {
+      if (selectedPhotoIds.length === 0) {
+        setSurveyError('No photos selected. Please go back and select photos.');
+        setSurveyLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/survey', {
         method: 'POST',
         headers: {
@@ -66,7 +81,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         body: JSON.stringify({
           ...data,
           bib_number: bib,
-          photo_id: photo?.id,
+          selected_photo_ids: selectedPhotoIds,
         }),
       });
 
@@ -97,7 +112,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         },
         body: JSON.stringify({
           bib_number: bib,
-          photo_id: photo?.id,
+          selected_photo_ids: selectedPhotoIds,
         }),
       });
 
@@ -131,22 +146,25 @@ export default function UnlockPage({ params }: UnlockPageProps) {
     );
   }
 
-  if (error || !photo) {
+  if (error || !photosData || selectedPhotoIds.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-red-800 mb-2">
-              Error
+              {selectedPhotoIds.length === 0 ? 'No Photos Selected' : 'Error'}
             </h2>
             <p className="text-red-600 mb-4">
-              {error || 'Something went wrong.'}
+              {selectedPhotoIds.length === 0 
+                ? 'Please go back and select at least one photo to continue.'
+                : error || 'Something went wrong.'
+              }
             </p>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push(`/photo/${bib}`)}
               className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
             >
-              Start Over
+              {selectedPhotoIds.length === 0 ? 'Back to Photo Selection' : 'Back to Photos'}
             </button>
           </div>
         </div>
@@ -155,6 +173,8 @@ export default function UnlockPage({ params }: UnlockPageProps) {
   }
 
   const isLoading = surveyLoading || paymentLoading;
+  const totalPrice = photosData.totalPrice;
+  const pricePerPhoto = photosData.pricePerPhoto;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -166,7 +186,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
               onClick={() => router.push(`/photo/${bib}`)}
               className="text-blue-600 hover:text-blue-800 font-medium"
             >
-              ← Back to Photo
+              ← Back to Photos
             </button>
             <div className="text-sm text-gray-500">
               Bib #{bib}
@@ -174,11 +194,55 @@ export default function UnlockPage({ params }: UnlockPageProps) {
           </div>
           
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Unlock Your Photo
+            Unlock Your Photos
           </h1>
           <p className="text-gray-600">
-            Complete a quick survey and payment to unlock your high-resolution photo for {formatCurrency(1000)}.
+            Complete a quick survey and payment to unlock {selectedPhotoIds.length} high-resolution photo{selectedPhotoIds.length !== 1 ? 's' : ''} for {formatPrice(totalPrice)}.
           </p>
+        </div>
+
+        {/* Selected Photos Summary */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Selected Photos ({selectedPhotoIds.length})
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+              {selectedPhotos.slice(0, 6).map((photo, index) => (
+                <div key={photo.id} className="relative">
+                  <img
+                    src={photo.preview_url}
+                    alt={`Selected photo ${index + 1}`}
+                    className="w-full h-20 object-cover rounded border-2 border-blue-500"
+                  />
+                  <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                    {index + 1}
+                  </div>
+                </div>
+              ))}
+              {selectedPhotos.length > 6 && (
+                <div className="w-full h-20 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                  <span className="text-gray-500 text-sm font-medium">
+                    +{selectedPhotos.length - 6} more
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {selectedPhotoIds.length} photo{selectedPhotoIds.length !== 1 ? 's' : ''} × {formatPrice(pricePerPhoto)} each
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-gray-900">
+                    Total: {formatPrice(totalPrice)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Progress Steps */}

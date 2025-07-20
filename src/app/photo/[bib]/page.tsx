@@ -2,8 +2,9 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import PhotoPreview from '@/components/PhotoPreview';
-import { Photo, PhotoAccess } from '@/types';
+import PhotoGallery from '@/components/PhotoGallery';
+import { PhotosWithSelections } from '@/types';
+import { usePhotoSelection } from '@/hooks/usePhotoSelection';
 
 interface PhotoPageProps {
   params: Promise<{
@@ -12,28 +13,26 @@ interface PhotoPageProps {
 }
 
 export default function PhotoPage({ params }: PhotoPageProps) {
-  const [photo, setPhoto] = useState<Photo | null>(null);
-  const [access, setAccess] = useState<PhotoAccess | null>(null);
+  const [photosData, setPhotosData] = useState<PhotosWithSelections | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
   const { bib } = use(params);
 
   useEffect(() => {
-    const fetchPhoto = async () => {
+    const fetchPhotos = async () => {
       try {
         const response = await fetch(`/api/photos/${bib}`);
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to load photo');
+          throw new Error(data.error || 'Failed to load photos');
         }
 
         if (data.success && data.data) {
-          setPhoto(data.data);
-          setAccess(data.data.access || null);
+          setPhotosData(data.data);
         } else {
-          setError('Photo not found');
+          setError('No photos found');
         }
       } catch (err: any) {
         setError(err.message || 'An error occurred');
@@ -42,11 +41,17 @@ export default function PhotoPage({ params }: PhotoPageProps) {
       }
     };
 
-    fetchPhoto();
+    fetchPhotos();
   }, [bib]);
 
+  const photoSelection = usePhotoSelection({
+    bib,
+    photos: photosData?.photos || [],
+    initialSelections: photosData?.selections || [],
+  });
+
   const handleUnlock = () => {
-    // Navigate to unlock flow (survey + payment)
+    // Navigate to unlock flow (survey + payment) with selected photos
     router.push(`/photo/${bib}/unlock`);
   };
 
@@ -55,22 +60,22 @@ export default function PhotoPage({ params }: PhotoPageProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your photo...</p>
+          <p className="text-gray-600">Loading your photos...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !photo) {
+  if (error || !photosData || !photosData.photos.length) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-red-800 mb-2">
-              Photo Not Found
+              No Photos Found
             </h2>
             <p className="text-red-600 mb-4">
-              {error || 'We couldn\'t find a photo for this bib number.'}
+              {error || 'We couldn\'t find any photos for this bib number.'}
             </p>
             <button
               onClick={() => router.push('/')}
@@ -84,13 +89,14 @@ export default function PhotoPage({ params }: PhotoPageProps) {
     );
   }
 
-  const isUnlocked = access?.is_unlocked || false;
+  const anyUnlocked = photosData.photos.some(photo => photo.access?.is_unlocked);
+  const showUnlockButton = !anyUnlocked;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="max-w-4xl mx-auto mb-8">
+        <div className="max-w-6xl mx-auto mb-8">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => router.push('/')}
@@ -104,97 +110,33 @@ export default function PhotoPage({ params }: PhotoPageProps) {
           </div>
           
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Your Race Photo
+            Your Race Photos
           </h1>
           <p className="text-gray-600">
-            {isUnlocked 
-              ? 'Your photo has been unlocked! You can now download the high-resolution version.'
-              : 'Complete a quick survey and payment to unlock your high-resolution photo.'
+            {anyUnlocked 
+              ? 'Your photos have been unlocked! You can now download the high-resolution versions.'
+              : 'Select the photos you want and complete a quick survey and payment to unlock them.'
             }
           </p>
         </div>
 
-        {/* Photo Preview */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <PhotoPreview 
-            photo={photo}
-            showWatermark={true}
-            onUnlock={!isUnlocked ? handleUnlock : undefined}
-            isUnlocked={isUnlocked}
-          />
-        </div>
-
-        {/* Photo Details */}
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Photo Details
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-medium text-gray-700 mb-2">Bib Number</h3>
-                <p className="text-gray-900">{photo.bib_number}</p>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-700 mb-2">Photo Taken</h3>
-                <p className="text-gray-900">
-                  {new Date(photo.uploaded_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
-              </div>
-              {access && (
-                <>
-                  <div>
-                    <h3 className="font-medium text-gray-700 mb-2">Status</h3>
-                    <p className="text-gray-900">
-                      {access.is_unlocked ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Unlocked
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          Locked
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  {access.download_count > 0 && (
-                    <div>
-                      <h3 className="font-medium text-gray-700 mb-2">Downloads</h3>
-                      <p className="text-gray-900">{access.download_count}</p>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Download Section */}
-        {isUnlocked && (
-          <div className="max-w-4xl mx-auto mt-8">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-green-800 mb-4">
-                Ready to Download
-              </h2>
-              <p className="text-green-700 mb-4">
-                Your photo is ready for download. Click the button below to get your high-resolution image.
-              </p>
-              <button
-                onClick={() => {
-                  // Handle download
-                  window.open(`/api/download/${bib}`, '_blank');
-                }}
-                className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
-              >
-                Download High-Resolution Photo
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Photo Gallery */}
+        <PhotoGallery
+          photos={photosData.photos}
+          selectedPhotoIds={photoSelection.selectedPhotoIds}
+          onTogglePhoto={photoSelection.togglePhoto}
+          onSelectAll={photoSelection.selectAll}
+          onDeselectAll={photoSelection.deselectAll}
+          totalSelected={photoSelection.totalSelected}
+          pricePerPhoto={photoSelection.pricePerPhoto}
+          totalPrice={photoSelection.totalPrice}
+          savings={photoSelection.savings}
+          allSelected={photoSelection.allSelected}
+          noneSelected={photoSelection.noneSelected}
+          isUpdating={photoSelection.isUpdating}
+          onUnlock={handleUnlock}
+          showUnlockButton={showUnlockButton}
+        />
       </div>
     </div>
   );

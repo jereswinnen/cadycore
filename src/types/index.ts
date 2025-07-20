@@ -7,12 +7,13 @@ export interface Photo {
   uploaded_at: string;
   is_active: boolean;
   metadata: Record<string, any>;
+  photo_order?: number;
 }
 
 export interface SurveyResponse {
   id: string;
-  photo_id: string;
   bib_number: string;
+  selected_photo_ids: string[];
   runner_name?: string;
   runner_email?: string;
   age_group?: string;
@@ -26,11 +27,13 @@ export interface SurveyResponse {
 
 export interface Payment {
   id: string;
-  photo_id: string;
   bib_number: string;
+  selected_photo_ids: string[];
   stripe_session_id?: string;
   stripe_payment_intent_id?: string;
-  amount: number;
+  total_photos: number;
+  price_per_photo: number;
+  total_amount: number;
   currency: string;
   status: 'pending' | 'completed' | 'failed' | 'cancelled';
   created_at: string;
@@ -59,6 +62,7 @@ export interface SurveyFormData {
   would_recommend: boolean;
   feedback?: string;
   marketing_consent: boolean;
+  selected_photo_ids: string[];
 }
 
 export interface SurveyFormInput {
@@ -80,6 +84,31 @@ export interface ApiResponse<T> {
 
 export interface PhotoWithAccess extends Photo {
   access?: PhotoAccess;
+  selected?: boolean;
+}
+
+export interface PhotoSelection {
+  id: string;
+  bib_number: string;
+  photo_id: string;
+  is_selected: boolean;
+  created_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  payment_id: string;
+  photo_id: string;
+  price_paid: number;
+  created_at: string;
+}
+
+export interface PhotosWithSelections {
+  photos: PhotoWithAccess[];
+  selections: PhotoSelection[];
+  totalSelected: number;
+  totalPrice: number;
+  pricePerPhoto: number;
 }
 
 export type AgeGroup = 
