@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { ApiResponse, SurveyFormData } from '@/types';
+import { ApiResponse, SurveySubmissionData } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       would_recommend,
       feedback,
       marketing_consent
-    }: SurveyFormData & { bib_number: string } = body;
+    }: SurveySubmissionData & { bib_number: string } = body;
 
     // Validate required fields
     if (!bib_number || !Array.isArray(selected_photo_ids) || selected_photo_ids.length === 0 || 

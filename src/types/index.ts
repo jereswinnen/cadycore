@@ -62,6 +62,9 @@ export interface SurveyFormData {
   would_recommend: boolean;
   feedback?: string;
   marketing_consent: boolean;
+}
+
+export interface SurveySubmissionData extends SurveyFormData {
   selected_photo_ids: string[];
 }
 
