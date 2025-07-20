@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import archiver from 'archiver';
-import { Readable } from 'stream';
 
 export async function GET(
   request: NextRequest,
@@ -40,59 +39,75 @@ export async function GET(
     
     await Promise.all(updatePromises);
 
-    // Create a zip archive
-    const archive = archiver('zip', {
-      zlib: { level: 9 } // Best compression
-    });
-
-    // Convert archive to a readable stream
-    const chunks: Buffer[] = [];
-    archive.on('data', (chunk) => chunks.push(chunk));
-    archive.on('error', (err) => {
-      console.error('Archive error:', err);
-      throw err;
-    });
-
-    // Add each photo to the zip
-    const downloadPromises = accessRecords.map(async (access, index) => {
-      if (!access.photo || !access.photo.highres_url) {
-        console.warn(`Skipping photo ${access.photo_id}: No high-res URL`);
-        return;
-      }
-
-      try {
-        // Fetch the image
-        const imageResponse = await fetch(access.photo.highres_url);
-        if (!imageResponse.ok) {
-          console.warn(`Failed to fetch photo ${access.photo_id}: ${imageResponse.status}`);
-          return;
+    // Fetch all photos first
+    const photoData = await Promise.all(
+      accessRecords.map(async (access, index) => {
+        if (!access.photo || !access.photo.highres_url) {
+          console.warn(`Skipping photo ${access.photo_id}: No high-res URL`);
+          return null;
         }
 
-        const imageBuffer = await imageResponse.arrayBuffer();
-        const filename = `photo-${index + 1}-${access.photo_id.slice(-8)}.jpg`;
-        
-        // Add to zip
-        archive.append(Buffer.from(imageBuffer), { name: filename });
-      } catch (error) {
-        console.error(`Error processing photo ${access.photo_id}:`, error);
-      }
+        try {
+          const imageResponse = await fetch(access.photo.highres_url);
+          if (!imageResponse.ok) {
+            console.warn(`Failed to fetch photo ${access.photo_id}: ${imageResponse.status}`);
+            return null;
+          }
+
+          const imageBuffer = await imageResponse.arrayBuffer();
+          const filename = `photo-${index + 1}-${access.photo_id.slice(-8)}.jpg`;
+          
+          return {
+            buffer: Buffer.from(imageBuffer),
+            filename
+          };
+        } catch (error) {
+          console.error(`Error processing photo ${access.photo_id}:`, error);
+          return null;
+        }
+      })
+    );
+
+    // Filter out failed downloads
+    const validPhotos = photoData.filter(photo => photo !== null);
+
+    if (validPhotos.length === 0) {
+      return NextResponse.json({
+        error: 'Failed to fetch any photos'
+      }, { status: 500 });
+    }
+
+    // Create zip using Promise-based approach
+    const zipBuffer = await new Promise<Buffer>((resolve, reject) => {
+      const archive = archiver('zip', {
+        zlib: { level: 9 }
+      });
+
+      const chunks: Buffer[] = [];
+      
+      archive.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
+      
+      archive.on('end', () => {
+        resolve(Buffer.concat(chunks));
+      });
+      
+      archive.on('error', (err) => {
+        reject(err);
+      });
+
+      // Add all photos to the archive
+      validPhotos.forEach(photo => {
+        if (photo) {
+          archive.append(photo.buffer, { name: photo.filename });
+        }
+      });
+
+      // Finalize the archive
+      archive.finalize();
     });
 
-    // Wait for all photos to be processed
-    await Promise.all(downloadPromises);
-    
-    // Finalize the archive
-    await archive.finalize();
-
-    // Wait for archive to complete
-    await new Promise((resolve, reject) => {
-      archive.on('end', resolve);
-      archive.on('error', reject);
-    });
-
-    // Create the final buffer
-    const zipBuffer = Buffer.concat(chunks);
-    
     // Create filename
     const filename = `race-photos-${bibNumber}.zip`;
     
