@@ -128,7 +128,25 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       console.log(`Updated ${accessData?.length || 0} photo access records`);
     }
 
-    // Photo access has been updated above - payment tracking is handled by the payments table
+    // Create order items for tracking individual photo purchases
+    if (paymentData && paymentData.length > 0) {
+      const payment = paymentData[0];
+      const orderItems = photoIds.map(photoId => ({
+        payment_id: payment.id,
+        photo_id: photoId,
+        price_paid: payment.price_per_photo
+      }));
+
+      const { error: orderError } = await supabaseAdmin
+        .from('order_items')
+        .insert(orderItems);
+
+      if (orderError) {
+        console.error('Failed to create order items:', orderError);
+      } else {
+        console.log(`Created ${orderItems.length} order items`);
+      }
+    }
 
     console.log(`Payment completed for bib ${bib_number}, ${photoIds.length} photos unlocked`);
   } catch (error) {

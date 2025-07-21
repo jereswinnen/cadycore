@@ -29,7 +29,7 @@ export async function GET() {
     // Fetch payment data
     const { data: paymentData, error: paymentError } = await supabase
       .from('payments')
-      .select('bib_number, status, amount');
+      .select('bib_number, status, total_amount');
 
     if (paymentError) {
       console.error('Error fetching payment data:', paymentError);
@@ -78,7 +78,7 @@ export async function GET() {
         bib.has_payment = true;
         if (payment.status === 'completed') {
           bib.is_paid = true;
-          bib.payment_amount += payment.amount || 0; // Sum all payments for this bib
+          bib.payment_amount += payment.total_amount || 0; // Sum all payments for this bib
         }
       }
     });

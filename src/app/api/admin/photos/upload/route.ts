@@ -24,6 +24,20 @@ export async function POST(request: NextRequest) {
 
     const uploadedPhotos = [];
 
+    // Get current highest photo_order for this bib to determine next order
+    const { data: existingPhotos, error: countError } = await supabaseAdmin
+      .from('photos')
+      .select('photo_order')
+      .eq('bib_number', bibNumber.toUpperCase())
+      .order('photo_order', { ascending: false })
+      .limit(1);
+
+    if (countError) {
+      console.error('Error getting photo count:', countError);
+    }
+
+    const startingOrder = existingPhotos?.[0]?.photo_order ? existingPhotos[0].photo_order + 1 : 1;
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const fileId = uuidv4();
@@ -58,6 +72,7 @@ export async function POST(request: NextRequest) {
         preview_url: previewUrl.publicUrl,
         highres_url: previewUrl.publicUrl,
         watermark_url: previewUrl.publicUrl, // You might want to add watermarking logic
+        photo_order: startingOrder + i,
         metadata: {
           original_filename: file.name,
           file_size: file.size,
