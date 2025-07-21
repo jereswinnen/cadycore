@@ -17,13 +17,13 @@ export async function GET() {
       );
     }
 
-    // Fetch photo access data
-    const { data: accessData, error: accessError } = await supabase
-      .from('photo_access')
-      .select('bib_number, survey_completed, payment_completed');
+    // Fetch survey data to check completion status
+    const { data: surveyData, error: surveyError } = await supabase
+      .from('survey_responses')
+      .select('bib_number');
 
-    if (accessError) {
-      console.error('Error fetching access data:', accessError);
+    if (surveyError) {
+      console.error('Error fetching survey data:', surveyError);
     }
 
     // Fetch payment data
@@ -63,13 +63,11 @@ export async function GET() {
       }
     });
 
-    // Process access data
-    accessData?.forEach(access => {
-      if (bibMap.has(access.bib_number)) {
-        const bib = bibMap.get(access.bib_number);
-        if (access.survey_completed) {
-          bib.has_survey = true;
-        }
+    // Process survey data - if a survey exists for this bib, mark as completed
+    surveyData?.forEach(survey => {
+      if (bibMap.has(survey.bib_number)) {
+        const bib = bibMap.get(survey.bib_number);
+        bib.has_survey = true;
       }
     });
 
