@@ -109,20 +109,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Save payment record
-    console.log(`Creating payment record with session ID: ${session.id}`);
+    // Save payment record for each photo (current schema supports single photo per payment)
+    console.log(`Creating payment records for ${photoCount} photos with session ID: ${session.id}`);
+    const paymentRecords = selected_photo_ids.map(photoId => ({
+      photo_id: photoId,
+      bib_number: bibNumberUpper,
+      stripe_session_id: session.id,
+      amount: pricePerPhoto,
+      currency: 'usd',
+      status: 'pending'
+    }));
+
     const { data: paymentData, error: paymentError } = await supabase
       .from('payments')
-      .insert({
-        bib_number: bibNumberUpper,
-        selected_photo_ids: selected_photo_ids,
-        stripe_session_id: session.id,
-        total_photos: photoCount,
-        price_per_photo: pricePerPhoto,
-        total_amount: totalAmount,
-        currency: 'usd',
-        status: 'pending'
-      })
+      .insert(paymentRecords)
       .select();
 
     if (paymentError) {

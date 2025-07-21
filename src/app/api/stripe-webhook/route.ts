@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  const { bib_number, selected_photo_ids, photo_count } = session.metadata || {};
+  const { bib_number, selected_photo_ids } = session.metadata || {};
 
   if (!bib_number || !selected_photo_ids) {
     console.error('Missing metadata in checkout session:', session.id);
@@ -89,10 +89,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       console.log('Payment records:', allPayments);
     }
 
-    // Update payment record
-    console.log(`Looking for payment record with session ID: ${session.id}`);
+    // Update payment records (there will be one per photo with current schema)
+    console.log(`Looking for payment records with session ID: ${session.id}`);
     
-    // Try to update the payment record by session ID
     const { data: paymentData, error: paymentError } = await supabaseAdmin
       .from('payments')
       .update({
@@ -104,10 +103,10 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       .select();
 
     if (paymentError) {
-      console.error('Failed to update payment record:', paymentError);
+      console.error('Failed to update payment records:', paymentError);
     } else {
       console.log(`Payment records updated:`, paymentData?.length || 0);
-      console.log('Updated payment record:', paymentData);
+      console.log('Updated payment records:', paymentData);
     }
 
     // Update photo access for all selected photos
@@ -129,25 +128,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       console.log(`Updated ${accessData?.length || 0} photo access records`);
     }
 
-    // Create order items for tracking individual photo purchases
-    if (paymentData && paymentData.length > 0) {
-      const payment = paymentData[0];
-      const orderItems = photoIds.map(photoId => ({
-        payment_id: payment.id,
-        photo_id: photoId,
-        price_paid: payment.price_per_photo
-      }));
-
-      const { error: orderError } = await supabaseAdmin
-        .from('order_items')
-        .insert(orderItems);
-
-      if (orderError) {
-        console.error('Failed to create order items:', orderError);
-      } else {
-        console.log(`Created ${orderItems.length} order items`);
-      }
-    }
+    // Photo access has been updated above - payment tracking is handled by the payments table
 
     console.log(`Payment completed for bib ${bib_number}, ${photoIds.length} photos unlocked`);
   } catch (error) {
