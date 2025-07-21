@@ -16,15 +16,31 @@ interface BibData {
 export default function AdminDashboard() {
   const [bibs, setBibs] = useState<BibData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchBibs();
+    
+    // Set up auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchBibs(true); // Silent refresh
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchBibs = async () => {
+  const fetchBibs = async (silent = false) => {
     try {
+      if (!silent) {
+        setLoading(true);
+        setError('');
+      } else {
+        setRefreshing(true);
+      }
+
       const response = await fetch('/api/admin/bibs');
       const data = await response.json();
 
@@ -33,10 +49,17 @@ export default function AdminDashboard() {
       }
 
       setBibs(data.data || []);
+      setLastUpdated(new Date());
+      if (!silent) {
+        setError('');
+      }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      if (!silent) {
+        setError(err.message || 'An error occurred');
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -161,7 +184,7 @@ export default function AdminDashboard() {
         {/* Search and Filter */}
         <div className="bg-white rounded-lg shadow mb-6">
           <div className="p-6">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 mb-3">
               <div className="flex-1">
                 <input
                   type="text"
@@ -172,11 +195,33 @@ export default function AdminDashboard() {
                 />
               </div>
               <button
-                onClick={fetchBibs}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                onClick={() => fetchBibs()}
+                disabled={refreshing}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
-                Refresh
+                {refreshing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
+                    Refreshing...
+                  </>
+                ) : (
+                  'Refresh'
+                )}
               </button>
+            </div>
+            
+            {/* Live Update Status */}
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <div className="flex items-center">
+                <div className={`w-2 h-2 rounded-full mr-2 ${refreshing ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
+                <span>Auto-refreshes every 30 seconds</span>
+                {refreshing && <span className="ml-2 text-blue-600">• Updating now</span>}
+              </div>
+              {lastUpdated && (
+                <span>
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
             </div>
           </div>
         </div>
