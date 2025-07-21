@@ -267,11 +267,6 @@ export default function PhotoUpload() {
                       }}
                     />
                   </div>
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded-lg flex items-center justify-center">
-                    <div className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity text-center p-2">
-                      {photo.filename}
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
