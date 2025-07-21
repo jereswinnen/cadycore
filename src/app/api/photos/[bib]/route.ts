@@ -74,9 +74,13 @@ export async function GET(
       }
     }
 
-    // Create photo selections if they don't exist (default all selected)
-    if (!selections || selections.length === 0) {
-      const selectionRecords = photos.map(photo => ({
+    // Create photo selections for photos that don't have them (default selected)
+    const photosWithoutSelections = photos.filter(photo => 
+      !selections?.some(s => s.photo_id === photo.id)
+    );
+
+    if (photosWithoutSelections.length > 0) {
+      const selectionRecords = photosWithoutSelections.map(photo => ({
         bib_number: bibNumber,
         photo_id: photo.id,
         is_selected: true

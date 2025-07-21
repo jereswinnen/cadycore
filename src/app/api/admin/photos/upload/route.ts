@@ -114,6 +114,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Create photo_selections entries for all newly uploaded photos (selected by default)
+    const photoSelectionRecords = uploadedPhotos.map(photo => ({
+      bib_number: bibNumber.toUpperCase(),
+      photo_id: photo.id,
+      is_selected: true
+    }));
+
+    const { error: selectionsError } = await supabaseAdmin
+      .from('photo_selections')
+      .insert(photoSelectionRecords);
+
+    if (selectionsError) {
+      console.error('Error creating photo selections:', selectionsError);
+      // Don't fail the upload for this, but log it
+    } else {
+      console.log(`Created ${photoSelectionRecords.length} photo selection records`);
+    }
+
     return NextResponse.json({
       success: true,
       data: {
