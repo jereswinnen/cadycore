@@ -60,18 +60,45 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Get public URLs
+      // Get public URLs (try public first, fallback to signed URL)
       const { data: previewUrl } = supabaseAdmin.storage
         .from('photos')
         .getPublicUrl(uploadData.path);
+
+      // Verify the URL works, otherwise create a signed URL
+      let finalPreviewUrl = previewUrl.publicUrl;
+      
+      // Check if we can access the public URL, if not create a signed URL
+      try {
+        const testResponse = await fetch(previewUrl.publicUrl, { method: 'HEAD' });
+        if (!testResponse.ok) {
+          // Public URL doesn't work, create a signed URL
+          const { data: signedUrl, error: signedError } = await supabaseAdmin.storage
+            .from('photos')
+            .createSignedUrl(uploadData.path, 3600 * 24 * 7); // 7 days
+          
+          if (!signedError && signedUrl) {
+            finalPreviewUrl = signedUrl.signedUrl;
+          }
+        }
+      } catch (error) {
+        // If public URL test fails, try signed URL
+        const { data: signedUrl, error: signedError } = await supabaseAdmin.storage
+          .from('photos')
+          .createSignedUrl(uploadData.path, 3600 * 24 * 7); // 7 days
+        
+        if (!signedError && signedUrl) {
+          finalPreviewUrl = signedUrl.signedUrl;
+        }
+      }
 
       // For now, use the same URL for both preview and high-res
       // In a real system, you might want to create different sized versions
       const photoData = {
         bib_number: bibNumber.toUpperCase(),
-        preview_url: previewUrl.publicUrl,
-        highres_url: previewUrl.publicUrl,
-        watermark_url: previewUrl.publicUrl, // You might want to add watermarking logic
+        preview_url: finalPreviewUrl,
+        highres_url: finalPreviewUrl,
+        watermark_url: finalPreviewUrl, // You might want to add watermarking logic
         photo_order: startingOrder + i,
         metadata: {
           original_filename: file.name,
