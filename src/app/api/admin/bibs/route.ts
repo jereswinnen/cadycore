@@ -3,39 +3,43 @@ import { supabase } from '@/lib/supabase';
 
 export async function GET() {
   try {
-    // Fetch all bib numbers with their photo count and payment/survey status
-    const { data: bibData, error } = await supabase
+    // Fetch all photos
+    const { data: photos, error: photoError } = await supabase
       .from('photos')
-      .select(`
-        bib_number,
-        id,
-        uploaded_at,
-        access:photo_access(
-          survey_completed,
-          payment_completed,
-          is_unlocked
-        ),
-        payments(
-          status,
-          completed_at,
-          total_amount
-        )
-      `)
-      .eq('is_active', true)
-      .order('bib_number');
+      .select('bib_number, id, uploaded_at')
+      .eq('is_active', true);
 
-    if (error) {
-      console.error('Error fetching bib data:', error);
+    if (photoError) {
+      console.error('Error fetching photos:', photoError);
       return NextResponse.json(
         { success: false, error: 'Database error' },
         { status: 500 }
       );
     }
 
+    // Fetch photo access data
+    const { data: accessData, error: accessError } = await supabase
+      .from('photo_access')
+      .select('bib_number, survey_completed, payment_completed');
+
+    if (accessError) {
+      console.error('Error fetching access data:', accessError);
+    }
+
+    // Fetch payment data
+    const { data: paymentData, error: paymentError } = await supabase
+      .from('payments')
+      .select('bib_number, status, total_amount');
+
+    if (paymentError) {
+      console.error('Error fetching payment data:', paymentError);
+    }
+
     // Group by bib number and aggregate data
     const bibMap = new Map();
     
-    bibData?.forEach(photo => {
+    // Process photos data
+    photos?.forEach(photo => {
       const bibNumber = photo.bib_number;
       
       if (!bibMap.has(bibNumber)) {
@@ -57,17 +61,26 @@ export async function GET() {
       if (!bib.latest_upload || photo.uploaded_at > bib.latest_upload) {
         bib.latest_upload = photo.uploaded_at;
       }
+    });
 
-      // Check survey and payment status
-      if (photo.access?.[0]?.survey_completed) {
-        bib.has_survey = true;
+    // Process access data
+    accessData?.forEach(access => {
+      if (bibMap.has(access.bib_number)) {
+        const bib = bibMap.get(access.bib_number);
+        if (access.survey_completed) {
+          bib.has_survey = true;
+        }
       }
-      
-      if (photo.payments?.[0]) {
+    });
+
+    // Process payment data
+    paymentData?.forEach(payment => {
+      if (bibMap.has(payment.bib_number)) {
+        const bib = bibMap.get(payment.bib_number);
         bib.has_payment = true;
-        if (photo.payments[0].status === 'completed') {
+        if (payment.status === 'completed') {
           bib.is_paid = true;
-          bib.payment_amount = photo.payments[0].total_amount || 0;
+          bib.payment_amount = payment.total_amount || 0;
         }
       }
     });
