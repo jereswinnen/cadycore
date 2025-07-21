@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface UploadedPhoto {
   id: string;
@@ -254,24 +255,17 @@ export default function PhotoUpload() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
               {uploadResult.photos.map((photo) => (
                 <div key={photo.id} className="relative group">
-                  <div className="w-full h-24 bg-gray-100 rounded-lg shadow-sm overflow-hidden flex items-center justify-center">
-                    <img
+                  <div className="w-full h-24 bg-gray-100 rounded-lg shadow-sm overflow-hidden relative">
+                    <Image
                       src={photo.preview_url}
                       alt={photo.filename}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                       onLoad={() => console.log('Image loaded successfully:', photo.filename)}
-                      onError={(e) => {
+                      onError={() => {
                         console.error('Image load error for:', photo.filename, 'URL:', photo.preview_url);
-                        // Hide the broken image and show filename instead
-                        e.currentTarget.style.display = 'none';
                       }}
                     />
-                    <div className="text-gray-500 text-xs text-center p-2 max-w-full">
-                      <svg className="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <div className="truncate">{photo.filename}</div>
-                    </div>
                   </div>
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded-lg flex items-center justify-center">
                     <div className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity text-center p-2">
