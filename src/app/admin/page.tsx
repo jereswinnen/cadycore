@@ -63,6 +63,33 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteBib = async (bibNumber: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete bib ${bibNumber}?\n\nThis will permanently delete:\n• All photos for this bib\n• Survey responses\n• Payment records\n• All associated data\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/admin/bibs/${bibNumber}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete bib');
+      }
+
+      // Refresh the bibs list
+      await fetchBibs();
+      
+      alert(`Successfully deleted bib ${bibNumber} and ${data.deleted?.photos || 0} photo(s)`);
+    } catch (err: any) {
+      alert(`Failed to delete bib ${bibNumber}: ${err.message}`);
+    }
+  };
+
   const filteredBibs = bibs.filter(bib =>
     bib.bib_number.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -295,10 +322,16 @@ export default function AdminDashboard() {
                         </Link>
                         <Link
                           href={`/admin/upload?bib=${bib.bib_number}`}
-                          className="text-green-600 hover:text-green-900"
+                          className="text-green-600 hover:text-green-900 mr-4"
                         >
                           Add Photos
                         </Link>
+                        <button
+                          onClick={() => handleDeleteBib(bib.bib_number)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))

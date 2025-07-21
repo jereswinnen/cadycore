@@ -83,6 +83,40 @@ export default function PhotoUpload() {
     setError('');
   };
 
+  const handleDeletePhoto = async (photoId: string, filename: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${filename}"?\n\nThis will permanently remove the photo and all associated data.\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/admin/photos/${photoId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete photo');
+      }
+
+      // Remove the photo from the current upload result
+      if (uploadResult) {
+        const updatedPhotos = uploadResult.photos.filter(p => p.id !== photoId);
+        setUploadResult({
+          ...uploadResult,
+          photos: updatedPhotos,
+          uploaded_count: updatedPhotos.length
+        });
+      }
+
+      alert(`Successfully deleted "${filename}"`);
+    } catch (err: any) {
+      alert(`Failed to delete photo: ${err.message}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow">
@@ -266,6 +300,20 @@ export default function PhotoUpload() {
                         console.error('Image load error for:', photo.filename, 'URL:', photo.preview_url);
                       }}
                     />
+                    {/* Delete button */}
+                    <button
+                      onClick={() => handleDeletePhoto(photo.id, photo.filename)}
+                      className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title={`Delete ${photo.filename}`}
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  {/* Filename tooltip */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="truncate">{photo.filename}</div>
                   </div>
                 </div>
               ))}
