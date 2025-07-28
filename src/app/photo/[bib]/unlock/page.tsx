@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import SurveyForm from "@/components/SurveyForm";
+import PhotoDisplay from "@/components/PhotoDisplay";
 import { PhotosWithSelections, SurveyFormData } from "@/types";
 import { formatPrice } from "@/lib/pricing";
 
@@ -259,38 +260,29 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         </div>
 
         {/* Selected Photos Summary */}
-        {/* 
-        <div className="max-w-4xl mx-auto mb-12">
+        {/* <div className="max-w-4xl mx-auto mb-12">
           <div className="card p-8">
             <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>
               Selected Photos ({selectedPhotoIds.length})
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-              {selectedPhotos.slice(0, 6).map((photo, index) => (
-                <div key={photo.id} className="relative">
-                  <div className="relative w-full h-20 rounded overflow-hidden border-2" 
-                       style={{ borderColor: 'var(--primary)' }}>
-                    <Image
-                      src={photo.preview_url}
-                      alt={`Selected photo ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
-                       style={{ background: 'var(--primary)' }}>
-                    {index + 1}
-                  </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
+              {selectedPhotos.slice(0, 10).map((photo, index) => (
+                <div key={photo.id} className="relative aspect-square">
+                  <PhotoDisplay
+                    photo={photo}
+                    index={selectedPhotos.findIndex(p => p.id === photo.id)}
+                    isUnlocked={false}
+                  />
                 </div>
               ))}
-              {selectedPhotos.length > 6 && (
-                <div className="w-full h-20 rounded-xl border-2 border-dashed flex items-center justify-center"
+              {selectedPhotos.length > 10 && (
+                <div className="aspect-square rounded-xl border-2 border-dashed flex items-center justify-center"
                      style={{ 
                        background: 'var(--secondary)', 
                        borderColor: 'var(--border)' 
                      }}>
                   <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                    +{selectedPhotos.length - 6} more
+                    +{selectedPhotos.length - 10} more
                   </span>
                 </div>
               )}
@@ -311,8 +303,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
               </div>
             </div>
           </div>
-        </div>
-        */}
+        </div> */}
 
         {/* Survey Form */}
         <div className="max-w-4xl mx-auto">

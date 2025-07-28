@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       // Create signed URLs for reliable access
       const { data: signedUrl, error: signedError } = await supabaseAdmin.storage
         .from('photos')
-        .createSignedUrl(uploadData.path, 3600 * 24 * 7); // 7 days
+        .createSignedUrl(uploadData.path, 3600 * 24 * 365); // 1 year
 
       if (signedError) {
         console.error('Error creating signed URL:', signedError);

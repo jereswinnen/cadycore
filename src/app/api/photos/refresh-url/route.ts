@@ -43,14 +43,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Generate new signed URLs (7 days expiry)
+    // Generate new signed URLs (1 year expiry)
     const { data: newPreviewUrl, error: previewError } = await supabase.storage
       .from('photos')
-      .createSignedUrl(previewPath, 3600 * 24 * 7);
+      .createSignedUrl(previewPath, 3600 * 24 * 365);
 
     const { data: newHighresUrl, error: highresError } = await supabase.storage
       .from('photos')
-      .createSignedUrl(highresPath, 3600 * 24 * 7);
+      .createSignedUrl(highresPath, 3600 * 24 * 365);
 
     if (previewError || highresError || !newPreviewUrl || !newHighresUrl) {
       return NextResponse.json({

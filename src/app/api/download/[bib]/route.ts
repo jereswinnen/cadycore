@@ -84,11 +84,45 @@ async function downloadPhoto(access: any, bibNumber: string, photoId?: string) {
   }
 
   try {
-    // Fetch the image from the URL
-    const imageResponse = await fetch(access.photo.highres_url);
+    // Check if URL might be expired and refresh if needed
+    let highresUrl = access.photo.highres_url;
+    
+    // First attempt to fetch
+    let imageResponse = await fetch(highresUrl);
     
     if (!imageResponse.ok) {
-      throw new Error('Failed to fetch image');
+      // URL might be expired, try to refresh it
+      const extractFilePath = (url: string): string | null => {
+        const match = url.match(/\/photos\/([^?]+)/);
+        return match ? match[1] : null;
+      };
+
+      const highresPath = extractFilePath(highresUrl);
+      
+      if (highresPath) {
+        const { data: newHighresUrl } = await supabase.storage
+          .from('photos')
+          .createSignedUrl(highresPath, 3600 * 24 * 365);
+
+        if (newHighresUrl) {
+          // Update database with new URL
+          await supabase
+            .from('photos')
+            .update({
+              highres_url: newHighresUrl.signedUrl,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', access.photo.id);
+          
+          // Try fetching again with new URL
+          highresUrl = newHighresUrl.signedUrl;
+          imageResponse = await fetch(highresUrl);
+        }
+      }
+    }
+    
+    if (!imageResponse.ok) {
+      throw new Error('Failed to fetch image after URL refresh');
     }
 
     const imageBuffer = await imageResponse.arrayBuffer();
@@ -109,7 +143,7 @@ async function downloadPhoto(access: any, bibNumber: string, photoId?: string) {
   } catch (fetchError) {
     console.error('Error fetching image:', fetchError);
     
-    // Fallback: redirect to the image URL
-    return NextResponse.redirect(access.photo.highres_url);
+    // Fallback: redirect to the image URL (use the potentially refreshed URL)
+    return NextResponse.redirect(highresUrl || access.photo.highres_url);
   }
 }

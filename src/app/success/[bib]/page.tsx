@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { PhotoWithAccess } from "@/types";
+import PhotoDisplay from "@/components/PhotoDisplay";
 
 interface SuccessPageProps {
   params: Promise<{
@@ -287,13 +288,13 @@ export default function SuccessPage({ params }: SuccessPageProps) {
                 </button>
               )}
 
-              <button
+{/* <button
                 onClick={() => router.push(`/photo/${bib}`)}
                 className="btn btn-secondary font-semibold"
                 style={{ padding: "0.75rem 1.5rem" }}
               >
                 View All Photos
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -307,72 +308,28 @@ export default function SuccessPage({ params }: SuccessPageProps) {
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {photos.map((photo, index) => (
-                <div key={photo.id} className="card overflow-hidden">
-                  <div className="relative">
-                    <img
-                      src={photo.highres_url || photo.preview_url}
-                      alt={`Photo ${index + 1}`}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div
-                      className="absolute top-3 left-3 px-3 py-1 rounded-full text-white text-sm font-medium"
-                      style={{
-                        background: "rgba(0, 0, 0, 0.6)",
-                        backdropFilter: "blur(10px)",
-                      }}
-                    >
-                      #{index + 1}
-                    </div>
-                    <div
-                      className="absolute bottom-3 right-3 px-3 py-1 rounded-full text-white text-xs font-medium flex items-center gap-1"
-                      style={{ background: "var(--success)" }}
-                    >
-                      <svg
-                        className="w-3 h-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Unlocked
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <p
-                          className="text-base font-medium"
-                          style={{ color: "var(--text-primary)" }}
-                        >
-                          Photo {index + 1}
-                        </p>
-                        <p
-                          className="text-sm"
-                          style={{ color: "var(--text-secondary)" }}
-                        >
-                          Downloads: {photo.access?.download_count || 0}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDownload(photo.id)}
-                      disabled={downloadingPhotoId === photo.id}
-                      className="btn w-full font-semibold"
-                      style={{
-                        background: "var(--success)",
-                        color: "white",
-                        opacity: downloadingPhotoId === photo.id ? "0.7" : "1",
-                      }}
-                    >
-                      {downloadingPhotoId === photo.id
-                        ? "Downloading..."
-                        : "Download High-Res"}
-                    </button>
-                  </div>
+                <div key={photo.id} className="space-y-4">
+                  <PhotoDisplay
+                    photo={photo}
+                    index={index}
+                    isUnlocked={true}
+                    showNumber={false}
+                  />
+                  {/* Download button underneath */}
+                  <button
+                    onClick={() => handleDownload(photo.id)}
+                    disabled={downloadingPhotoId === photo.id}
+                    className="btn w-full font-semibold"
+                    style={{
+                      background: "var(--success)",
+                      color: "white",
+                      opacity: downloadingPhotoId === photo.id ? "0.7" : "1",
+                    }}
+                  >
+                    {downloadingPhotoId === photo.id
+                      ? "Downloading..."
+                      : "Download High-Res"}
+                  </button>
                 </div>
               ))}
             </div>

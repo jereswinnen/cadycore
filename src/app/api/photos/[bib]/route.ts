@@ -102,6 +102,57 @@ export async function GET(
       .select('*')
       .eq('bib_number', bibNumber);
 
+    // Check and refresh expired URLs
+    const refreshUrlsIfNeeded = async (photos: any[]) => {
+      const now = Date.now();
+      
+      for (const photo of photos) {
+        // Check if URLs might be expired (created more than 6 days ago to be safe)
+        const photoAge = now - new Date(photo.updated_at || photo.created_at).getTime();
+        const sixDaysInMs = 6 * 24 * 60 * 60 * 1000;
+        
+        if (photoAge > sixDaysInMs) {
+          console.log(`Refreshing URLs for photo ${photo.id}, age: ${photoAge / (24 * 60 * 60 * 1000)} days`);
+          
+          // Refresh URLs
+          const extractFilePath = (url: string): string | null => {
+            const match = url.match(/\/photos\/([^?]+)/);
+            return match ? match[1] : null;
+          };
+
+          const previewPath = extractFilePath(photo.preview_url);
+          const highresPath = extractFilePath(photo.highres_url);
+
+          if (previewPath && highresPath) {
+            const { data: newPreviewUrl } = await supabase.storage
+              .from('photos')
+              .createSignedUrl(previewPath, 3600 * 24 * 365);
+
+            const { data: newHighresUrl } = await supabase.storage
+              .from('photos')
+              .createSignedUrl(highresPath, 3600 * 24 * 365);
+
+            if (newPreviewUrl && newHighresUrl) {
+              await supabase
+                .from('photos')
+                .update({
+                  preview_url: newPreviewUrl.signedUrl,
+                  highres_url: newHighresUrl.signedUrl,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', photo.id);
+              
+              // Update the photo object
+              photo.preview_url = newPreviewUrl.signedUrl;
+              photo.highres_url = newHighresUrl.signedUrl;
+            }
+          }
+        }
+      }
+    };
+
+    await refreshUrlsIfNeeded(photos);
+
     // Merge selection data with photos
     const photosWithSelections: PhotoWithAccess[] = photos.map(photo => ({
       ...photo,
