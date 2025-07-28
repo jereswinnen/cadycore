@@ -150,7 +150,7 @@ export default function PhotoGallery({
                 borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
                 borderWidth: isSelected ? '2px' : '1px',
                 boxShadow: isSelected 
-                  ? '0 20px 40px rgba(10, 78, 58, 0.2), 0 8px 16px rgba(10, 78, 58, 0.1)' 
+                  ? '0 20px 40px rgba(187, 74, 146, 0.2), 0 8px 16px rgba(187, 74, 146, 0.1)' 
                   : 'var(--shadow-sm)'
               }}
               onClick={() => !isUpdating && !isUnlocked && onTogglePhoto(photo.id)}
@@ -206,7 +206,7 @@ export default function PhotoGallery({
                 {isUnlocked && (
                   <div className="absolute bottom-4 left-4">
                     <div className="px-3 py-2 rounded-full text-white text-sm font-medium flex items-center gap-2" 
-                         style={{ background: 'var(--success)', boxShadow: '0 4px 12px rgba(10, 78, 58, 0.4)' }}>
+                         style={{ background: 'var(--success)', boxShadow: '0 4px 12px rgba(187, 74, 146, 0.4)' }}>
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -289,7 +289,7 @@ export default function PhotoGallery({
                     background: 'var(--success)',
                     color: 'white',
                     padding: '0.75rem 1.5rem',
-                    boxShadow: '0 4px 12px rgba(10, 78, 58, 0.3)'
+                    boxShadow: '0 4px 12px rgba(187, 74, 146, 0.3)'
                   }}
                 >
                   Download Photo #{index + 1}
