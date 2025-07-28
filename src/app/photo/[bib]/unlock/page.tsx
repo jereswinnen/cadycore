@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import SurveyForm from '@/components/SurveyForm';
 import { PhotosWithSelections, SurveyFormData } from '@/types';
 import { formatPrice } from '@/lib/pricing';
@@ -137,10 +138,19 @@ export default function UnlockPage({ params }: UnlockPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="w-12 h-12 mx-auto mb-6">
+            <div className="w-full h-full border-3 rounded-full animate-spin" 
+                 style={{ 
+                   borderColor: 'var(--border)', 
+                   borderTopColor: 'var(--primary)',
+                   borderWidth: '3px'
+                 }}></div>
+          </div>
+          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+            Loading...
+          </p>
         </div>
       </div>
     );
@@ -148,13 +158,19 @@ export default function UnlockPage({ params }: UnlockPageProps) {
 
   if (error || !photosData || selectedPhotoIds.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="max-w-md mx-auto text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-red-800 mb-2">
+          <div className="card p-8" style={{ borderColor: 'var(--danger)' }}>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" 
+                 style={{ background: 'rgba(255, 69, 58, 0.1)' }}>
+              <span className="text-2xl">
+                {selectedPhotoIds.length === 0 ? '📷' : '❌'}
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
               {selectedPhotoIds.length === 0 ? 'No Photos Selected' : 'Error'}
             </h2>
-            <p className="text-red-600 mb-4">
+            <p className="text-base mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {selectedPhotoIds.length === 0 
                 ? 'Please go back and select at least one photo to continue.'
                 : error || 'Something went wrong.'
@@ -162,7 +178,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
             </p>
             <button
               onClick={() => router.push(`/photo/${bib}`)}
-              className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              className="btn btn-primary"
             >
               {selectedPhotoIds.length === 0 ? 'Back to Photo Selection' : 'Back to Photos'}
             </button>
@@ -177,66 +193,96 @@ export default function UnlockPage({ params }: UnlockPageProps) {
   const pricePerPhoto = photosData.pricePerPhoto;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <div className="container mx-auto px-6 py-12">
         {/* Header */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => router.push(`/photo/${bib}`)}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="btn btn-secondary"
+              style={{ padding: '0.75rem 1.5rem' }}
             >
               ← Back to Photos
             </button>
-            <div className="text-sm text-gray-500">
+            <div className="px-4 py-2 rounded-full" 
+                 style={{ 
+                   background: 'var(--secondary)', 
+                   color: 'var(--text-secondary)',
+                   fontSize: '0.875rem',
+                   fontWeight: '500'
+                 }}>
               Bib #{bib}
             </div>
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             Unlock Your Photos
           </h1>
-          <p className="text-gray-600">
+          <p className="text-xl leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             Complete a quick survey and payment to unlock {selectedPhotoIds.length} high-resolution photo{selectedPhotoIds.length !== 1 ? 's' : ''} for {formatPrice(totalPrice)}.
           </p>
         </div>
 
         {/* Selected Photos Summary */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="card p-8">
+            <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>
               Selected Photos ({selectedPhotoIds.length})
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
               {selectedPhotos.slice(0, 6).map((photo, index) => (
                 <div key={photo.id} className="relative">
-                  <img
-                    src={photo.preview_url}
-                    alt={`Selected photo ${index + 1}`}
-                    className="w-full h-20 object-cover rounded border-2 border-blue-500"
-                  />
-                  <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                  <div className="relative w-full h-20 rounded-xl overflow-hidden" 
+                       style={{ border: '2px solid var(--primary)' }}>
+                    <Image
+                      src={photo.preview_url}
+                      alt={`Selected photo ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        // Handle image load errors gracefully
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        if (target.parentElement) {
+                          target.parentElement.style.background = 'var(--secondary)';
+                          target.parentElement.innerHTML = `
+                            <div class="w-full h-full flex items-center justify-center">
+                              <span style="color: var(--text-secondary); font-size: 0.75rem;">Image unavailable</span>
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                       style={{ background: 'var(--primary)' }}>
                     {index + 1}
                   </div>
                 </div>
               ))}
               {selectedPhotos.length > 6 && (
-                <div className="w-full h-20 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
-                  <span className="text-gray-500 text-sm font-medium">
+                <div className="w-full h-20 rounded-xl border-2 border-dashed flex items-center justify-center"
+                     style={{ 
+                       background: 'var(--secondary)', 
+                       borderColor: 'var(--border)' 
+                     }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                     +{selectedPhotos.length - 6} more
                   </span>
                 </div>
               )}
             </div>
-            <div className="bg-blue-50 rounded-lg p-4">
+            <div className="rounded-2xl p-6" 
+                 style={{ background: 'var(--secondary)', border: '1px solid var(--border)' }}>
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
                     {selectedPhotoIds.length} photo{selectedPhotoIds.length !== 1 ? 's' : ''} × {formatPrice(pricePerPhoto)} each
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
                     Total: {formatPrice(totalPrice)}
                   </p>
                 </div>
@@ -246,36 +292,53 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         </div>
 
         {/* Progress Steps */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="card p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
+                <div className="w-10 h-10 rounded-full text-white text-sm font-bold flex items-center justify-center"
+                     style={{ background: 'var(--primary)' }}>
                   1
                 </div>
-                <span className="ml-2 text-sm font-medium text-gray-900">Survey</span>
+                <span className="ml-3 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  Survey
+                </span>
               </div>
-              <div className="flex-1 mx-4">
-                <div className="h-1 bg-gray-200 rounded-full">
-                  <div className="h-1 bg-blue-600 rounded-full w-0"></div>
+              <div className="flex-1 mx-6">
+                <div className="h-2 rounded-full" style={{ background: 'var(--border)' }}>
+                  <div className="h-2 rounded-full w-0" style={{ background: 'var(--primary)' }}></div>
                 </div>
               </div>
               <div className="flex items-center">
-                <div className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
+                <div className="w-10 h-10 rounded-full text-sm font-bold flex items-center justify-center"
+                     style={{ 
+                       background: 'var(--secondary)', 
+                       color: 'var(--text-secondary)',
+                       border: '2px solid var(--border)'
+                     }}>
                   2
                 </div>
-                <span className="ml-2 text-sm font-medium text-gray-500">Payment</span>
+                <span className="ml-3 text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  Payment
+                </span>
               </div>
-              <div className="flex-1 mx-4">
-                <div className="h-1 bg-gray-200 rounded-full">
-                  <div className="h-1 bg-gray-200 rounded-full w-0"></div>
+              <div className="flex-1 mx-6">
+                <div className="h-2 rounded-full" style={{ background: 'var(--border)' }}>
+                  <div className="h-2 rounded-full w-0" style={{ background: 'var(--border)' }}></div>
                 </div>
               </div>
               <div className="flex items-center">
-                <div className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
+                <div className="w-10 h-10 rounded-full text-sm font-bold flex items-center justify-center"
+                     style={{ 
+                       background: 'var(--secondary)', 
+                       color: 'var(--text-secondary)',
+                       border: '2px solid var(--border)'
+                     }}>
                   3
                 </div>
-                <span className="ml-2 text-sm font-medium text-gray-500">Download</span>
+                <span className="ml-3 text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  Download
+                </span>
               </div>
             </div>
           </div>
@@ -293,12 +356,19 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         {/* Loading Overlay */}
         {isLoading && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="card p-8 max-w-sm mx-4 text-center">
+              <div className="w-12 h-12 mx-auto mb-6">
+                <div className="w-full h-full border-3 rounded-full animate-spin" 
+                     style={{ 
+                       borderColor: 'var(--border)', 
+                       borderTopColor: 'var(--primary)',
+                       borderWidth: '3px'
+                     }}></div>
+              </div>
+              <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
                 {paymentLoading ? 'Processing Payment...' : 'Submitting Survey...'}
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
                 {paymentLoading 
                   ? 'Please wait while we redirect you to payment.'
                   : 'Please wait while we process your survey.'
