@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import SurveyForm from '@/components/SurveyForm';
-import { PhotosWithSelections, SurveyFormData } from '@/types';
-import { formatPrice } from '@/lib/pricing';
+import { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import SurveyForm from "@/components/SurveyForm";
+import { PhotosWithSelections, SurveyFormData } from "@/types";
+import { formatPrice } from "@/lib/pricing";
 
 interface UnlockPageProps {
   params: Promise<{
@@ -14,12 +14,14 @@ interface UnlockPageProps {
 }
 
 export default function UnlockPage({ params }: UnlockPageProps) {
-  const [photosData, setPhotosData] = useState<PhotosWithSelections | null>(null);
+  const [photosData, setPhotosData] = useState<PhotosWithSelections | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [surveyLoading, setSurveyLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [surveyError, setSurveyError] = useState('');
+  const [error, setError] = useState("");
+  const [surveyError, setSurveyError] = useState("");
   const router = useRouter();
   const { bib } = use(params);
 
@@ -30,23 +32,25 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to load photos');
+          throw new Error(data.error || "Failed to load photos");
         }
 
         if (data.success && data.data) {
           setPhotosData(data.data);
-          
+
           // If all photos are already unlocked, redirect to photo page
-          const allUnlocked = data.data.photos.every((photo: any) => photo.access?.is_unlocked);
+          const allUnlocked = data.data.photos.every(
+            (photo: any) => photo.access?.is_unlocked
+          );
           if (allUnlocked && data.data.photos.length > 0) {
             router.push(`/photo/${bib}`);
             return;
           }
         } else {
-          setError('No photos found');
+          setError("No photos found");
         }
       } catch (err: any) {
-        setError(err.message || 'An error occurred');
+        setError(err.message || "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -55,29 +59,31 @@ export default function UnlockPage({ params }: UnlockPageProps) {
     fetchPhotos();
   }, [bib, router]);
 
-  const selectedPhotoIds = photosData?.selections
-    ?.filter(selection => selection.is_selected)
-    ?.map(selection => selection.photo_id) || [];
+  const selectedPhotoIds =
+    photosData?.selections
+      ?.filter((selection) => selection.is_selected)
+      ?.map((selection) => selection.photo_id) || [];
 
-  const selectedPhotos = photosData?.photos?.filter(photo => 
-    selectedPhotoIds.includes(photo.id)
-  ) || [];
+  const selectedPhotos =
+    photosData?.photos?.filter((photo) =>
+      selectedPhotoIds.includes(photo.id)
+    ) || [];
 
   const handleSurveySubmit = async (data: SurveyFormData) => {
     setSurveyLoading(true);
-    setSurveyError('');
+    setSurveyError("");
 
     try {
       if (selectedPhotoIds.length === 0) {
-        setSurveyError('No photos selected. Please go back and select photos.');
+        setSurveyError("No photos selected. Please go back and select photos.");
         setSurveyLoading(false);
         return;
       }
 
-      const response = await fetch('/api/survey', {
-        method: 'POST',
+      const response = await fetch("/api/survey", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...data,
@@ -89,13 +95,13 @@ export default function UnlockPage({ params }: UnlockPageProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit survey');
+        throw new Error(result.error || "Failed to submit survey");
       }
 
       // Survey submitted successfully, now proceed to payment
       await handlePayment();
     } catch (err: any) {
-      setSurveyError(err.message || 'Failed to submit survey');
+      setSurveyError(err.message || "Failed to submit survey");
     } finally {
       setSurveyLoading(false);
     }
@@ -103,13 +109,13 @@ export default function UnlockPage({ params }: UnlockPageProps) {
 
   const handlePayment = async () => {
     setPaymentLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
+      const response = await fetch("/api/checkout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           bib_number: bib,
@@ -120,17 +126,17 @@ export default function UnlockPage({ params }: UnlockPageProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create payment session');
+        throw new Error(result.error || "Failed to create payment session");
       }
 
       // Redirect to Stripe Checkout
       if (result.data?.url) {
         window.location.href = result.data.url;
       } else {
-        throw new Error('No payment URL received');
+        throw new Error("No payment URL received");
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to process payment');
+      setError(err.message || "Failed to process payment");
     } finally {
       setPaymentLoading(false);
     }
@@ -138,17 +144,22 @@ export default function UnlockPage({ params }: UnlockPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--background)" }}
+      >
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-6">
-            <div className="w-full h-full border-3 rounded-full animate-spin" 
-                 style={{ 
-                   borderColor: 'var(--border)', 
-                   borderTopColor: 'var(--primary)',
-                   borderWidth: '3px'
-                 }}></div>
+            <div
+              className="w-full h-full border-3 rounded-full animate-spin"
+              style={{
+                borderColor: "var(--border)",
+                borderTopColor: "var(--primary)",
+                borderWidth: "3px",
+              }}
+            ></div>
           </div>
-          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-lg" style={{ color: "var(--text-secondary)" }}>
             Loading...
           </p>
         </div>
@@ -158,29 +169,41 @@ export default function UnlockPage({ params }: UnlockPageProps) {
 
   if (error || !photosData || selectedPhotoIds.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--background)" }}
+      >
         <div className="max-w-md mx-auto text-center">
-          <div className="card p-8" style={{ borderColor: 'var(--danger)' }}>
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" 
-                 style={{ background: 'rgba(255, 69, 58, 0.1)' }}>
+          <div className="card p-8" style={{ borderColor: "var(--danger)" }}>
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: "rgba(255, 69, 58, 0.1)" }}
+            >
               <span className="text-2xl">
-                {selectedPhotoIds.length === 0 ? '📷' : '❌'}
+                {selectedPhotoIds.length === 0 ? "📷" : "❌"}
               </span>
             </div>
-            <h2 className="text-xl font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-              {selectedPhotoIds.length === 0 ? 'No Photos Selected' : 'Error'}
+            <h2
+              className="text-xl font-semibold mb-3"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {selectedPhotoIds.length === 0 ? "No Photos Selected" : "Error"}
             </h2>
-            <p className="text-base mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {selectedPhotoIds.length === 0 
-                ? 'Please go back and select at least one photo to continue.'
-                : error || 'Something went wrong.'
-              }
+            <p
+              className="text-base mb-6 leading-relaxed"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {selectedPhotoIds.length === 0
+                ? "Please go back and select at least one photo to continue."
+                : error || "Something went wrong."}
             </p>
             <button
               onClick={() => router.push(`/photo/${bib}`)}
               className="btn btn-primary"
             >
-              {selectedPhotoIds.length === 0 ? 'Back to Photo Selection' : 'Back to Photos'}
+              {selectedPhotoIds.length === 0
+                ? "Back to Photo Selection"
+                : "Back to Photos"}
             </button>
           </div>
         </div>
@@ -193,7 +216,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
   const pricePerPhoto = photosData.pricePerPhoto;
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen" style={{ background: "var(--background)" }}>
       <div className="container mx-auto px-6 py-12">
         {/* Header */}
         <div className="max-w-4xl mx-auto mb-12">
@@ -201,26 +224,37 @@ export default function UnlockPage({ params }: UnlockPageProps) {
             <button
               onClick={() => router.push(`/photo/${bib}`)}
               className="btn btn-secondary"
-              style={{ padding: '0.75rem 1.5rem' }}
+              style={{ padding: "0.75rem 1.5rem" }}
             >
               ← Back to Photos
             </button>
-            <div className="px-4 py-2 rounded-full" 
-                 style={{ 
-                   background: 'var(--secondary)', 
-                   color: 'var(--text-secondary)',
-                   fontSize: '0.875rem',
-                   fontWeight: '500'
-                 }}>
+            <div
+              className="px-4 py-2 rounded-full"
+              style={{
+                background: "var(--secondary)",
+                color: "var(--text-secondary)",
+                fontSize: "0.875rem",
+                fontWeight: "500",
+              }}
+            >
               Bib #{bib}
             </div>
           </div>
-          
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+
+          <h1
+            className="text-4xl sm:text-5xl font-bold mb-4"
+            style={{ color: "var(--text-primary)" }}
+          >
             Unlock Your Photos
           </h1>
-          <p className="text-xl leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Complete a quick survey and payment to unlock {selectedPhotoIds.length} high-resolution photo{selectedPhotoIds.length !== 1 ? 's' : ''} for {formatPrice(totalPrice)}.
+          <p
+            className="text-xl leading-relaxed"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Complete a quick survey and payment to unlock{" "}
+            {selectedPhotoIds.length} high-resolution photo
+            {selectedPhotoIds.length !== 1 ? "s" : ""} for{" "}
+            {formatPrice(totalPrice)}.
           </p>
         </div>
 
@@ -280,59 +314,6 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         </div>
         */}
 
-        {/* Progress Steps */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <div className="card p-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full text-white text-sm font-bold flex items-center justify-center"
-                     style={{ background: 'var(--primary)' }}>
-                  1
-                </div>
-                <span className="ml-3 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
-                  Survey
-                </span>
-              </div>
-              <div className="flex-1 mx-6">
-                <div className="h-2 rounded-full" style={{ background: 'var(--border)' }}>
-                  <div className="h-2 rounded-full w-0" style={{ background: 'var(--primary)' }}></div>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full text-sm font-bold flex items-center justify-center"
-                     style={{ 
-                       background: 'var(--secondary)', 
-                       color: 'var(--text-secondary)',
-                       border: '2px solid var(--border)'
-                     }}>
-                  2
-                </div>
-                <span className="ml-3 text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  Payment
-                </span>
-              </div>
-              <div className="flex-1 mx-6">
-                <div className="h-2 rounded-full" style={{ background: 'var(--border)' }}>
-                  <div className="h-2 rounded-full w-0" style={{ background: 'var(--border)' }}></div>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full text-sm font-bold flex items-center justify-center"
-                     style={{ 
-                       background: 'var(--secondary)', 
-                       color: 'var(--text-secondary)',
-                       border: '2px solid var(--border)'
-                     }}>
-                  3
-                </div>
-                <span className="ml-3 text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  Download
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Survey Form */}
         <div className="max-w-4xl mx-auto">
           <SurveyForm
@@ -347,21 +328,30 @@ export default function UnlockPage({ params }: UnlockPageProps) {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="card p-8 max-w-sm mx-4 text-center">
               <div className="w-12 h-12 mx-auto mb-6">
-                <div className="w-full h-full border-3 rounded-full animate-spin" 
-                     style={{ 
-                       borderColor: 'var(--border)', 
-                       borderTopColor: 'var(--primary)',
-                       borderWidth: '3px'
-                     }}></div>
+                <div
+                  className="w-full h-full border-3 rounded-full animate-spin"
+                  style={{
+                    borderColor: "var(--border)",
+                    borderTopColor: "var(--primary)",
+                    borderWidth: "3px",
+                  }}
+                ></div>
               </div>
-              <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-                {paymentLoading ? 'Processing Payment...' : 'Submitting Survey...'}
+              <h3
+                className="text-xl font-semibold mb-3"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {paymentLoading
+                  ? "Processing Payment..."
+                  : "Submitting Survey..."}
               </h3>
-              <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
-                {paymentLoading 
-                  ? 'Please wait while we redirect you to payment.'
-                  : 'Please wait while we process your survey.'
-                }
+              <p
+                className="text-base"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {paymentLoading
+                  ? "Please wait while we redirect you to payment."
+                  : "Please wait while we process your survey."}
               </p>
             </div>
           </div>

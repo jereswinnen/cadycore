@@ -68,6 +68,7 @@ export default function SurveyForm({
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<SurveyFormInput>({
     resolver: zodResolver(surveySchema),
@@ -77,14 +78,17 @@ export default function SurveyForm({
     },
   });
 
+  const watchedFields = watch();
+  const isFormValid =
+    watchedFields.runner_name?.trim() &&
+    watchedFields.runner_email?.trim() &&
+    watchedFields.age_group &&
+    watchedFields.race_experience &&
+    watchedFields.satisfaction_rating;
+
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Survey</h2>
-        <p className="text-gray-600 mb-6">
-          Please complete this quick survey to unlock your photo.
-        </p>
-
+      <div className="card p-8">
         <form
           onSubmit={handleSubmit((data) => {
             const formData: SurveyFormData = {
@@ -99,7 +103,8 @@ export default function SurveyForm({
           <div>
             <label
               htmlFor="runner_name"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
             >
               Full Name *
             </label>
@@ -107,11 +112,11 @@ export default function SurveyForm({
               type="text"
               id="runner_name"
               {...register("runner_name")}
-              className="dark:text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               disabled={loading}
             />
             {errors.runner_name && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                 {errors.runner_name.message}
               </p>
             )}
@@ -121,7 +126,8 @@ export default function SurveyForm({
           <div>
             <label
               htmlFor="runner_email"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
             >
               Email Address *
             </label>
@@ -129,11 +135,11 @@ export default function SurveyForm({
               type="email"
               id="runner_email"
               {...register("runner_email")}
-              className="dark:text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               disabled={loading}
             />
             {errors.runner_email && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                 {errors.runner_email.message}
               </p>
             )}
@@ -143,14 +149,15 @@ export default function SurveyForm({
           <div>
             <label
               htmlFor="age_group"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
             >
               Age Group *
             </label>
             <select
               id="age_group"
               {...register("age_group")}
-              className="dark:text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               disabled={loading}
             >
               <option value="">Select your age group</option>
@@ -161,7 +168,7 @@ export default function SurveyForm({
               ))}
             </select>
             {errors.age_group && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                 {errors.age_group.message}
               </p>
             )}
@@ -171,14 +178,15 @@ export default function SurveyForm({
           <div>
             <label
               htmlFor="race_experience"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
             >
               Race Experience *
             </label>
             <select
               id="race_experience"
               {...register("race_experience")}
-              className="dark:text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               disabled={loading}
             >
               <option value="">Select your experience level</option>
@@ -189,7 +197,7 @@ export default function SurveyForm({
               ))}
             </select>
             {errors.race_experience && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                 {errors.race_experience.message}
               </p>
             )}
@@ -197,7 +205,10 @@ export default function SurveyForm({
 
           {/* Satisfaction Rating */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
               How satisfied are you with today's race? *
             </label>
             <div className="flex space-x-4">
@@ -207,18 +218,26 @@ export default function SurveyForm({
                     type="radio"
                     value={rating}
                     {...register("satisfaction_rating")}
-                    className="mr-2"
+                    className="mr-2 accent-[var(--primary)]"
                     disabled={loading}
                   />
-                  <span className="dark:text-black text-sm">{rating}</span>
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    {rating}
+                  </span>
                 </label>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p
+              className="text-xs mt-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
               1 = Very Dissatisfied, 5 = Very Satisfied
             </p>
             {errors.satisfaction_rating && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                 {errors.satisfaction_rating.message}
               </p>
             )}
@@ -230,10 +249,13 @@ export default function SurveyForm({
               <input
                 type="checkbox"
                 {...register("would_recommend")}
-                className="mr-2"
+                className="mr-2 accent-[var(--primary)]"
                 disabled={loading}
               />
-              <span className="text-sm text-gray-700">
+              <span
+                className="text-sm"
+                style={{ color: "var(--text-primary)" }}
+              >
                 I would recommend this race to others
               </span>
             </label>
@@ -243,7 +265,8 @@ export default function SurveyForm({
           <div>
             <label
               htmlFor="feedback"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
             >
               Additional Feedback (Optional)
             </label>
@@ -251,12 +274,12 @@ export default function SurveyForm({
               id="feedback"
               {...register("feedback")}
               rows={3}
-              className="dark:text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               placeholder="Share any additional thoughts about your race experience..."
               disabled={loading}
             />
             {errors.feedback && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                 {errors.feedback.message}
               </p>
             )}
@@ -268,10 +291,13 @@ export default function SurveyForm({
               <input
                 type="checkbox"
                 {...register("marketing_consent")}
-                className="mr-2 mt-1"
+                className="mr-2 mt-1 accent-[var(--primary)]"
                 disabled={loading}
               />
-              <span className="text-sm text-gray-700">
+              <span
+                className="text-sm"
+                style={{ color: "var(--text-primary)" }}
+              >
                 I agree to receive marketing communications about future races
                 and events
               </span>
@@ -279,15 +305,28 @@ export default function SurveyForm({
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-600">{error}</p>
+            <div
+              className="rounded-2xl p-4"
+              style={{
+                background: "rgba(255, 69, 58, 0.1)",
+                border: "1px solid var(--danger)",
+              }}
+            >
+              <p className="text-sm" style={{ color: "var(--danger)" }}>
+                {error}
+              </p>
             </div>
           )}
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+            disabled={loading || !isFormValid}
+            className="btn btn-primary w-full text-lg font-semibold"
+            style={{
+              padding: "1rem 2rem",
+              opacity: !isFormValid && !loading ? "0.5" : "1",
+              cursor: !isFormValid && !loading ? "not-allowed" : "pointer",
+            }}
           >
             {loading ? "Submitting..." : "Continue to Payment"}
           </button>
