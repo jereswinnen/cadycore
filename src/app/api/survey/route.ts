@@ -59,10 +59,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingSurvey) {
+      // Survey already completed - return success and let frontend redirect to payment
       return NextResponse.json({
-        success: false,
-        error: 'Survey already completed for this bib number'
-      } as ApiResponse<null>, { status: 400 });
+        success: true,
+        data: { 
+          message: 'Survey already completed',
+          redirect_to_payment: true 
+        }
+      } as ApiResponse<any>);
     }
 
     // Save survey response

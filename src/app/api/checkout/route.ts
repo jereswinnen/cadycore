@@ -101,6 +101,10 @@ export async function POST(request: NextRequest) {
       mode: 'payment',
       success_url: generateSecureUrl(`/success/${bibNumberUpper}?session_id={CHECKOUT_SESSION_ID}`),
       cancel_url: generateSecureUrl(`/photo/${bibNumberUpper}/unlock`),
+      automatic_tax: {
+        enabled: true,
+      },
+      billing_address_collection: 'required',
       metadata: {
         bib_number: bibNumberUpper,
         selected_photo_ids: JSON.stringify(selected_photo_ids),
