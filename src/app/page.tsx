@@ -116,7 +116,7 @@ export default function Home() {
           </div>
 
           {/* How it works - Simplified */}
-          <div className="mb-12">
+          {/* <div className="mb-12">
             <h2
               className="text-xl font-semibold mb-6 text-center lg:text-left"
               style={{ color: "var(--text-primary)" }}
@@ -167,10 +167,10 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Features - Simplified */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <div className="flex items-center gap-3">
               <span className="text-lg">🏆</span>
               <div>
@@ -222,7 +222,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
