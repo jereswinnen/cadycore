@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ interface UploadResult {
   photos: UploadedPhoto[];
 }
 
-export default function PhotoUpload() {
+function PhotoUploadContent() {
   const searchParams = useSearchParams();
   const [bibNumber, setBibNumber] = useState(searchParams?.get('bib') || '');
   const [uploading, setUploading] = useState(false);
@@ -342,5 +342,13 @@ export default function PhotoUpload() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PhotoUpload() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div>Loading...</div></div>}>
+      <PhotoUploadContent />
+    </Suspense>
   );
 }
