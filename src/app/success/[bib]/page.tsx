@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { PhotoWithAccess } from "@/types";
 import PhotoDisplay from "@/components/PhotoDisplay";
 
@@ -209,6 +210,17 @@ export default function SuccessPage({ params }: SuccessPageProps) {
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       <div className="container mx-auto px-6 py-12">
         <div className="max-w-4xl mx-auto">
+          {/* Logo */}
+          <div className="flex justify-center mb-12">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={160}
+              height={53}
+              className="h-14 w-auto"
+              priority
+            />
+          </div>
           {/* Success Message */}
           <div
             className="flex justify-between items-center card p-8 mb-8 text-center"

@@ -80,6 +80,17 @@ export default function Home() {
         <div className="w-full max-w-xl px-8 py-12">
           {/* Header */}
           <div className="mb-12 text-center lg:text-left">
+            {/* Logo */}
+            <div className="flex justify-center lg:justify-start mb-8">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={160}
+                height={53}
+                className="h-14 w-auto"
+                priority
+              />
+            </div>
             <h1
               className="text-4xl sm:text-5xl font-bold mb-6"
               style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}

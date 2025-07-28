@@ -219,6 +219,17 @@ export default function UnlockPage({ params }: UnlockPageProps) {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       <div className="container mx-auto px-6 py-12">
+        {/* Logo */}
+        <div className="flex justify-center mb-12">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={160}
+            height={53}
+            className="h-14 w-auto"
+            priority
+          />
+        </div>
         {/* Header */}
         <div className="max-w-4xl mx-auto mb-12">
           <div className="flex items-center justify-between mb-6">
