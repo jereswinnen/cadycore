@@ -225,6 +225,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
         </div>
 
         {/* Selected Photos Summary */}
+        {/* 
         <div className="max-w-4xl mx-auto mb-12">
           <div className="card p-8">
             <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>
@@ -233,26 +234,13 @@ export default function UnlockPage({ params }: UnlockPageProps) {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
               {selectedPhotos.slice(0, 6).map((photo, index) => (
                 <div key={photo.id} className="relative">
-                  <div className="relative w-full h-20 rounded-xl overflow-hidden" 
-                       style={{ border: '2px solid var(--primary)' }}>
+                  <div className="relative w-full h-20 rounded overflow-hidden border-2" 
+                       style={{ borderColor: 'var(--primary)' }}>
                     <Image
                       src={photo.preview_url}
                       alt={`Selected photo ${index + 1}`}
                       fill
                       className="object-cover"
-                      onError={(e) => {
-                        // Handle image load errors gracefully
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        if (target.parentElement) {
-                          target.parentElement.style.background = 'var(--secondary)';
-                          target.parentElement.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center">
-                              <span style="color: var(--text-secondary); font-size: 0.75rem;">Image unavailable</span>
-                            </div>
-                          `;
-                        }
-                      }}
                     />
                   </div>
                   <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
@@ -290,6 +278,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
             </div>
           </div>
         </div>
+        */}
 
         {/* Progress Steps */}
         <div className="max-w-4xl mx-auto mb-12">
