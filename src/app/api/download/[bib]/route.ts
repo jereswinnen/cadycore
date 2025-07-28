@@ -83,9 +83,10 @@ async function downloadPhoto(access: any, bibNumber: string, photoId?: string) {
     // Don't fail the request - just log the error
   }
 
+  // Check if URL might be expired and refresh if needed
+  let highresUrl = access.photo.highres_url;
+  
   try {
-    // Check if URL might be expired and refresh if needed
-    let highresUrl = access.photo.highres_url;
     
     // First attempt to fetch
     let imageResponse = await fetch(highresUrl);
