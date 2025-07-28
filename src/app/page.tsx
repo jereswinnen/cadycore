@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import BibInput from '@/components/BibInput';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import BibInput from "@/components/BibInput";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleBibSubmit = async (bib: string) => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       // Check if photo exists for this bib number
@@ -19,129 +20,194 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to find photo');
+        throw new Error(data.error || "Failed to find photo");
       }
 
       if (data.success && data.data) {
         // Photo found, navigate to photo preview page
         router.push(`/photo/${bib}`);
       } else {
-        setError('No photo found for this bib number. Please check your number and try again.');
+        setError(
+          "No photo found for this bib number. Please check your number and try again."
+        );
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred. Please try again.');
+      setError(err.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      {/* Hero Section */}
-      <div className="relative">
-        <div className="container mx-auto px-6 py-20">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Header */}
-            <div className="mb-16">
-              <h1 className="text-5xl sm:text-6xl font-bold mb-6" style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
-                Get Your Race Photo
-              </h1>
-              <p className="text-xl leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-                Enter your bib number to find and purchase your professional race photo. 
-                High-resolution downloads available for just $10.
-              </p>
-            </div>
+    <div className="min-h-screen flex">
+      {/* Left Column - Hero Image (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative">
+        <Image
+          src="https://images.unsplash.com/photo-1524646349956-1590eacfa324?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="Marathon runners during race"
+          fill
+          className="object-cover"
+          priority
+        />
+        {/* Photo Credit */}
+        <div className="absolute bottom-4 left-4 text-xs text-white/80 bg-black/20 backdrop-blur-sm px-2 py-1 rounded">
+          Photo by{" "}
+          <a
+            href="https://unsplash.com/@peterampazzo?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-white transition-colors"
+          >
+            Pietro Rampazzo
+          </a>{" "}
+          on{" "}
+          <a
+            href="https://unsplash.com/photos/people-watching-padova-marathon-during-daytime-x5GcXFvJJhI?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-white transition-colors"
+          >
+            Unsplash
+          </a>
+        </div>
+      </div>
 
-            {/* Bib Input - Enhanced */}
-            <div className="mb-20">
-              <BibInput 
-                onSubmit={handleBibSubmit} 
-                loading={loading} 
-                error={error} 
-              />
-            </div>
+      {/* Right Column - Content */}
+      <div
+        className="w-full lg:w-1/2 flex items-center justify-center min-h-screen"
+        style={{ background: "var(--background)" }}
+      >
+        <div className="w-full max-w-xl px-8 py-12">
+          {/* Header */}
+          <div className="mb-12 text-center lg:text-left">
+            <h1
+              className="text-4xl sm:text-5xl font-bold mb-6"
+              style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+            >
+              Get Your Race Photo
+            </h1>
+            <p
+              className="text-lg leading-relaxed"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Enter your bib number to find and purchase your professional race
+              photo. High-resolution downloads available for just $10.
+            </p>
+          </div>
 
-            {/* How it works - Apple Card Style */}
-            <div className="card p-12 mb-16">
-              <h2 className="text-3xl font-bold mb-10" style={{ color: 'var(--text-primary)' }}>
-                How It Works
-              </h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="text-center group">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110" 
-                       style={{ background: 'var(--primary)', boxShadow: '0 8px 30px rgba(10, 78, 58, 0.3)' }}>
-                    <span className="text-white font-bold text-xl">1</span>
-                  </div>
-                  <h3 className="font-semibold text-lg mb-3" style={{ color: 'var(--text-primary)' }}>
-                    Enter Bib Number
-                  </h3>
-                  <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                    Type in your race bib number to find your photo
-                  </p>
+          {/* Bib Input */}
+          <div className="mb-12">
+            <BibInput
+              onSubmit={handleBibSubmit}
+              loading={loading}
+              error={error}
+            />
+          </div>
+
+          {/* How it works - Simplified */}
+          <div className="mb-12">
+            <h2
+              className="text-xl font-semibold mb-6 text-center lg:text-left"
+              style={{ color: "var(--text-primary)" }}
+            >
+              How It Works
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "var(--primary)" }}
+                >
+                  <span className="text-white font-bold text-sm">1</span>
                 </div>
-                <div className="text-center group">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110" 
-                       style={{ background: 'var(--primary)', boxShadow: '0 8px 30px rgba(10, 78, 58, 0.3)' }}>
-                    <span className="text-white font-bold text-xl">2</span>
-                  </div>
-                  <h3 className="font-semibold text-lg mb-3" style={{ color: 'var(--text-primary)' }}>
-                    Complete Survey
-                  </h3>
-                  <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                    Fill out a quick survey about your race experience
-                  </p>
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Enter your bib number
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "var(--primary)" }}
+                >
+                  <span className="text-white font-bold text-sm">2</span>
                 </div>
-                <div className="text-center group">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110" 
-                       style={{ background: 'var(--primary)', boxShadow: '0 8px 30px rgba(10, 78, 58, 0.3)' }}>
-                    <span className="text-white font-bold text-xl">3</span>
-                  </div>
-                  <h3 className="font-semibold text-lg mb-3" style={{ color: 'var(--text-primary)' }}>
-                    Purchase & Download
-                  </h3>
-                  <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                    Pay $10 and download your high-resolution photo
-                  </p>
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Complete a quick survey
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "var(--primary)" }}
+                >
+                  <span className="text-white font-bold text-sm">3</span>
                 </div>
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Purchase and download instantly
+                </p>
               </div>
             </div>
+          </div>
 
-            {/* Features - Clean Card Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="card p-8 text-left">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" 
-                     style={{ background: 'var(--secondary)', border: '2px solid var(--border)' }}>
-                  <span className="text-2xl">🏆</span>
-                </div>
-                <h3 className="font-semibold text-xl mb-3" style={{ color: 'var(--text-primary)' }}>
+          {/* Features - Simplified */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">🏆</span>
+              <div>
+                <h3
+                  className="font-medium text-sm"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Professional Quality
                 </h3>
-                <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  High-resolution photos captured by professional race photographers
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  High-resolution photos by race photographers
                 </p>
               </div>
-              <div className="card p-8 text-left">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" 
-                     style={{ background: 'var(--secondary)', border: '2px solid var(--border)' }}>
-                  <span className="text-2xl">⚡</span>
-                </div>
-                <h3 className="font-semibold text-xl mb-3" style={{ color: 'var(--text-primary)' }}>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-lg">⚡</span>
+              <div>
+                <h3
+                  className="font-medium text-sm"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Instant Download
                 </h3>
-                <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  Download your photo immediately after purchase - no waiting
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Download immediately after purchase
                 </p>
               </div>
-              <div className="card p-8 text-left md:col-span-2 lg:col-span-1">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" 
-                     style={{ background: 'var(--secondary)', border: '2px solid var(--border)' }}>
-                  <span className="text-2xl">💰</span>
-                </div>
-                <h3 className="font-semibold text-xl mb-3" style={{ color: 'var(--text-primary)' }}>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-lg">💰</span>
+              <div>
+                <h3
+                  className="font-medium text-sm"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Affordable Pricing
                 </h3>
-                <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  Just $10 per photo with bulk discounts available for multiple selections
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Just $10 per photo with bulk discounts
                 </p>
               </div>
             </div>
