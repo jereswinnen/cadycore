@@ -57,10 +57,19 @@ export default function PhotoPage({ params }: PhotoPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your photos...</p>
+          <div className="w-12 h-12 mx-auto mb-6">
+            <div className="w-full h-full border-3 rounded-full animate-spin" 
+                 style={{ 
+                   borderColor: 'var(--border)', 
+                   borderTopColor: 'var(--primary)',
+                   borderWidth: '3px'
+                 }}></div>
+          </div>
+          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+            Loading your photos...
+          </p>
         </div>
       </div>
     );
@@ -68,18 +77,22 @@ export default function PhotoPage({ params }: PhotoPageProps) {
 
   if (error || !photosData || !photosData.photos.length) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="max-w-md mx-auto text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-red-800 mb-2">
+          <div className="card p-8" style={{ borderColor: 'var(--danger)' }}>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" 
+                 style={{ background: 'rgba(255, 69, 58, 0.1)' }}>
+              <span className="text-2xl">❌</span>
+            </div>
+            <h2 className="text-xl font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
               No Photos Found
             </h2>
-            <p className="text-red-600 mb-4">
+            <p className="text-base mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {error || 'We couldn\'t find any photos for this bib number.'}
             </p>
             <button
               onClick={() => router.push('/')}
-              className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              className="btn btn-primary"
             >
               Try Another Bib Number
             </button>
@@ -93,26 +106,33 @@ export default function PhotoPage({ params }: PhotoPageProps) {
   const showUnlockButton = !anyUnlocked;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <div className="container mx-auto px-6 py-12">
         {/* Header */}
-        <div className="max-w-6xl mx-auto mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="max-w-6xl mx-auto mb-12">
+          <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => router.push('/')}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="btn btn-secondary"
+              style={{ padding: '0.75rem 1.5rem' }}
             >
               ← Back to Search
             </button>
-            <div className="text-sm text-gray-500">
+            <div className="px-4 py-2 rounded-full" 
+                 style={{ 
+                   background: 'var(--secondary)', 
+                   color: 'var(--text-secondary)',
+                   fontSize: '0.875rem',
+                   fontWeight: '500'
+                 }}>
               Bib #{bib}
             </div>
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             Your Race Photos
           </h1>
-          <p className="text-gray-600">
+          <p className="text-xl leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             {anyUnlocked 
               ? 'Your photos have been unlocked! You can now download the high-resolution versions.'
               : 'Select the photos you want and complete a quick survey and payment to unlock them.'

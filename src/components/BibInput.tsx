@@ -45,12 +45,13 @@ export default function BibInput({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="w-full max-w-lg mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
             htmlFor="bib"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-lg font-medium mb-4"
+            style={{ color: 'var(--text-primary)' }}
           >
             Enter your bib number
           </label>
@@ -60,13 +61,20 @@ export default function BibInput({
             value={bib}
             onChange={handleChange}
             placeholder="e.g. 1234"
-            className="dark:text-black w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg text-center"
+            className="input text-xl text-center font-medium tracking-wider"
+            style={{
+              fontSize: '1.5rem',
+              padding: '1rem 1.5rem',
+              minHeight: '60px',
+              borderRadius: '16px',
+              letterSpacing: '0.1em'
+            }}
             disabled={loading}
             autoFocus
             maxLength={20}
           />
           {(validationError || error) && (
-            <p className="mt-2 text-sm text-red-600">
+            <p className="mt-3 text-sm font-medium" style={{ color: 'var(--danger)' }}>
               {validationError || error}
             </p>
           )}
@@ -75,9 +83,23 @@ export default function BibInput({
         <button
           type="submit"
           disabled={loading || !bib.trim()}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+          className="btn btn-primary w-full text-lg font-semibold"
+          style={{
+            padding: '1rem 2rem',
+            minHeight: '56px',
+            fontSize: '1.125rem',
+            opacity: (loading || !bib.trim()) ? '0.5' : '1',
+            cursor: (loading || !bib.trim()) ? 'not-allowed' : 'pointer'
+          }}
         >
-          {loading ? "Searching..." : "Find My Photo"}
+          {loading ? (
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Searching...</span>
+            </div>
+          ) : (
+            "Find My Photo"
+          )}
         </button>
       </form>
     </div>
