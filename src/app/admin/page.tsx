@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface BibData {
   bib_number: string;
@@ -17,13 +17,13 @@ export default function AdminDashboard() {
   const [bibs, setBibs] = useState<BibData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchBibs();
-    
+
     // Set up auto-refresh every 30 seconds
     const interval = setInterval(() => {
       fetchBibs(true); // Silent refresh
@@ -36,26 +36,26 @@ export default function AdminDashboard() {
     try {
       if (!silent) {
         setLoading(true);
-        setError('');
+        setError("");
       } else {
         setRefreshing(true);
       }
 
-      const response = await fetch('/api/admin/bibs');
+      const response = await fetch("/api/admin/bibs");
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch bibs');
+        throw new Error(data.error || "Failed to fetch bibs");
       }
 
       setBibs(data.data || []);
       setLastUpdated(new Date());
       if (!silent) {
-        setError('');
+        setError("");
       }
     } catch (err: any) {
       if (!silent) {
-        setError(err.message || 'An error occurred');
+        setError(err.message || "An error occurred");
       }
     } finally {
       setLoading(false);
@@ -72,36 +72,40 @@ export default function AdminDashboard() {
 
     try {
       const response = await fetch(`/api/admin/bibs/${bibNumber}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete bib');
+        throw new Error(data.error || "Failed to delete bib");
       }
 
       // Refresh the bibs list
       await fetchBibs();
-      
-      alert(`Successfully deleted bib ${bibNumber} and ${data.deleted?.photos || 0} photo(s)`);
+
+      alert(
+        `Successfully deleted bib ${bibNumber} and ${
+          data.deleted?.photos || 0
+        } photo(s)`
+      );
     } catch (err: any) {
       alert(`Failed to delete bib ${bibNumber}: ${err.message}`);
     }
   };
 
-  const filteredBibs = bibs.filter(bib =>
+  const filteredBibs = bibs.filter((bib) =>
     bib.bib_number.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Never';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    if (!dateString) return "Never";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -111,18 +115,38 @@ export default function AdminDashboard() {
 
   const getStatusBadge = (bib: BibData) => {
     if (bib.is_paid) {
-      return <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">Paid</span>;
+      return (
+        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+          Paid
+        </span>
+      );
     }
     if (bib.has_payment) {
-      return <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">Payment Pending</span>;
+      return (
+        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">
+          Payment Pending
+        </span>
+      );
     }
     if (bib.has_survey) {
-      return <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Survey Complete</span>;
+      return (
+        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">
+          Survey Complete
+        </span>
+      );
     }
     if (bib.photo_count > 0) {
-      return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">Photos Available</span>;
+      return (
+        <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">
+          Photos Available
+        </span>
+      );
     }
-    return <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">No Photos</span>;
+    return (
+      <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
+        No Photos
+      </span>
+    );
   };
 
   if (loading) {
@@ -185,24 +209,26 @@ export default function AdminDashboard() {
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-2xl font-bold text-blue-600">{bibs.length}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {bibs.length}
+            </div>
             <div className="text-sm text-gray-600">Total Bibs</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-2xl font-bold text-green-600">
-              {bibs.filter(b => b.photo_count > 0).length}
+              {bibs.filter((b) => b.photo_count > 0).length}
             </div>
             <div className="text-sm text-gray-600">With Photos</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-2xl font-bold text-yellow-600">
-              {bibs.filter(b => b.has_survey).length}
+              {bibs.filter((b) => b.has_survey).length}
             </div>
             <div className="text-sm text-gray-600">Surveys Complete</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-2xl font-bold text-purple-600">
-              {bibs.filter(b => b.is_paid).length}
+              {bibs.filter((b) => b.is_paid).length}
             </div>
             <div className="text-sm text-gray-600">Paid</div>
           </div>
@@ -218,7 +244,7 @@ export default function AdminDashboard() {
                   placeholder="Search bib numbers..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="dark:text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <button
@@ -232,22 +258,26 @@ export default function AdminDashboard() {
                     Refreshing...
                   </>
                 ) : (
-                  'Refresh'
+                  "Refresh"
                 )}
               </button>
             </div>
-            
+
             {/* Live Update Status */}
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-2 ${refreshing ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 ${
+                    refreshing ? "bg-blue-500 animate-pulse" : "bg-green-500"
+                  }`}
+                ></div>
                 <span>Auto-refreshes every 30 seconds</span>
-                {refreshing && <span className="ml-2 text-blue-600">• Updating now</span>}
+                {refreshing && (
+                  <span className="ml-2 text-blue-600">• Updating now</span>
+                )}
               </div>
               {lastUpdated && (
-                <span>
-                  Last updated: {lastUpdated.toLocaleTimeString()}
-                </span>
+                <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>
               )}
             </div>
           </div>
@@ -282,8 +312,13 @@ export default function AdminDashboard() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredBibs.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                      {searchTerm ? 'No bibs match your search.' : 'No bibs found. Upload some photos to get started!'}
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
+                      {searchTerm
+                        ? "No bibs match your search."
+                        : "No bibs found. Upload some photos to get started!"}
                     </td>
                   </tr>
                 ) : (
@@ -296,7 +331,8 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {bib.photo_count} photo{bib.photo_count !== 1 ? 's' : ''}
+                          {bib.photo_count} photo
+                          {bib.photo_count !== 1 ? "s" : ""}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -304,7 +340,9 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {bib.is_paid ? formatCurrency(bib.payment_amount) : '—'}
+                          {bib.is_paid
+                            ? formatCurrency(bib.payment_amount)
+                            : "—"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
