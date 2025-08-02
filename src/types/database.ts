@@ -94,6 +94,9 @@ export interface Database {
           status: string;
           created_at: string;
           completed_at: string | null;
+          email_sent: boolean;
+          email_sent_at: string | null;
+          email_attempts: number;
         };
         Insert: {
           id?: string;
@@ -108,6 +111,9 @@ export interface Database {
           status?: string;
           created_at?: string;
           completed_at?: string | null;
+          email_sent?: boolean;
+          email_sent_at?: string | null;
+          email_attempts?: number;
         };
         Update: {
           id?: string;
@@ -122,6 +128,9 @@ export interface Database {
           status?: string;
           created_at?: string;
           completed_at?: string | null;
+          email_sent?: boolean;
+          email_sent_at?: string | null;
+          email_attempts?: number;
         };
       };
       photo_access: {

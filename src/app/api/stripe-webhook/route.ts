@@ -149,6 +149,39 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     console.log(`Payment completed for bib ${bib_number}, ${photoIds.length} photos unlocked`);
+
+    // Trigger email delivery after successful payment processing
+    if (paymentData && paymentData.length > 0) {
+      const payment = paymentData[0];
+      console.log(`Triggering email delivery for payment ID: ${payment.id}`);
+      
+      try {
+        // Call the email API to send photos
+        const emailResponse = await fetch(
+          `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/email/photos`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              payment_id: payment.id,
+              force_resend: false
+            }),
+          }
+        );
+
+        const emailResult = await emailResponse.json();
+        
+        if (emailResult.success) {
+          console.log(`Email sent successfully for payment ${payment.id}`);
+        } else {
+          console.error(`Email delivery failed for payment ${payment.id}:`, emailResult.error);
+        }
+      } catch (emailError) {
+        console.error(`Error triggering email for payment ${payment.id}:`, emailError);
+      }
+    }
   } catch (error) {
     console.error('Error processing completed checkout:', error);
   }

@@ -38,6 +38,9 @@ export interface Payment {
   status: 'pending' | 'completed' | 'failed' | 'cancelled';
   created_at: string;
   completed_at?: string;
+  email_sent?: boolean;
+  email_sent_at?: string;
+  email_attempts?: number;
 }
 
 export interface PhotoAccess {
@@ -112,6 +115,7 @@ export interface PhotosWithSelections {
   totalSelected: number;
   totalPrice: number;
   pricePerPhoto: number;
+  payment?: Pick<Payment, 'id' | 'email_sent' | 'email_sent_at' | 'email_attempts'> | null;
 }
 
 export type AgeGroup = 
