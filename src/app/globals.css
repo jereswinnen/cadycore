@@ -90,13 +90,13 @@ body {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, #bb4a92 0%, #3E6BDC 100%);
   color: white;
   box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
+  background: linear-gradient(135deg, #a63d7f 0%, #3559b8 100%);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }

@@ -90,15 +90,18 @@ export default function PhotoCard({
 
         {/* Watermark for locked photos */}
         {!isUnlocked && !hasError && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="px-6 py-3 rounded-2xl text-white text-lg font-bold rotate-12 select-none"
-                 style={{ 
-                   background: 'rgba(0, 0, 0, 0.7)', 
-                   backdropFilter: 'blur(10px)',
-                   border: '2px solid rgba(255, 255, 255, 0.3)'
-                 }}>
-              PREVIEW
-            </div>
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+            <div 
+              className="absolute inset-0" 
+              style={{
+                backgroundImage: 'url(/logo.png)',
+                backgroundRepeat: 'repeat',
+                backgroundSize: '150px',
+                backgroundPosition: 'center',
+                opacity: 0.6,
+                transform: 'rotate(-15deg) scale(1.2)',
+              }}
+            />
           </div>
         )}
 

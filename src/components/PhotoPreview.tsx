@@ -32,10 +32,18 @@ export default function PhotoPreview({
         />
         
         {showWatermark && !isUnlocked && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-black bg-opacity-50 text-white px-6 py-3 rounded-lg text-xl font-bold rotate-12 select-none">
-              PREVIEW
-            </div>
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+            <div 
+              className="absolute inset-0" 
+              style={{
+                backgroundImage: 'url(/logo.png)',
+                backgroundRepeat: 'repeat',
+                backgroundSize: '150px',
+                backgroundPosition: 'center',
+                opacity: 0.6,
+                transform: 'rotate(-15deg) scale(1.2)',
+              }}
+            />
           </div>
         )}
       </div>
