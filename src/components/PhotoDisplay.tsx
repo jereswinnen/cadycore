@@ -61,9 +61,9 @@ export default function PhotoDisplay({
             <div 
               className="absolute inset-0" 
               style={{
-                backgroundImage: 'url(/logo.png)',
+                backgroundImage: 'url(/watermark.png)',
                 backgroundRepeat: 'repeat',
-                backgroundSize: '150px',
+                backgroundSize: '200px',
                 backgroundPosition: 'center',
                 opacity: 0.6,
                 transform: 'rotate(-15deg) scale(1.2)',

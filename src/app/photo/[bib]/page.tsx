@@ -114,9 +114,9 @@ export default function PhotoPage({ params }: PhotoPageProps) {
           <Image
             src="/logo.png"
             alt="Logo"
-            width={160}
-            height={53}
-            className="h-14 w-auto"
+            width={200}
+            height={67}
+            className="h-20 w-auto"
             priority
           />
         </div>
