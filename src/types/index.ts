@@ -16,12 +16,11 @@ export interface SurveyResponse {
   selected_photo_ids: string[];
   runner_name?: string;
   runner_email?: string;
-  age_group?: string;
-  race_experience?: string;
-  satisfaction_rating?: number;
-  would_recommend?: boolean;
-  feedback?: string;
-  marketing_consent: boolean;
+  photo_preference?: 'posed' | 'action' | 'both';
+  social_media_preference?: 'posed' | 'action' | 'both' | 'neither';
+  will_pose?: 'yes' | 'maybe' | 'no';
+  price_preference?: '5-9' | '10-14' | '15-19' | '20-24' | '25+';
+  buy_immediately?: 'yes' | 'no';
   completed_at: string;
 }
 
@@ -59,12 +58,11 @@ export interface PhotoAccess {
 export interface SurveyFormData {
   runner_name: string;
   runner_email: string;
-  age_group: string;
-  race_experience: string;
-  satisfaction_rating: number;
-  would_recommend: boolean;
-  feedback?: string;
-  marketing_consent: boolean;
+  photo_preference: 'posed' | 'action' | 'both';
+  social_media_preference: 'posed' | 'action' | 'both' | 'neither';
+  will_pose: 'yes' | 'maybe' | 'no';
+  price_preference: '5-9' | '10-14' | '15-19' | '20-24' | '25+';
+  buy_immediately: 'yes' | 'no';
 }
 
 export interface SurveySubmissionData extends SurveyFormData {
@@ -74,12 +72,11 @@ export interface SurveySubmissionData extends SurveyFormData {
 export interface SurveyFormInput {
   runner_name: string;
   runner_email: string;
-  age_group: string;
-  race_experience: string;
-  satisfaction_rating: string;
-  would_recommend: boolean;
-  feedback?: string;
-  marketing_consent: boolean;
+  photo_preference: string;
+  social_media_preference: string;
+  will_pose: string;
+  price_preference: string;
+  buy_immediately: string;
 }
 
 export interface ApiResponse<T> {
@@ -118,19 +115,12 @@ export interface PhotosWithSelections {
   payment?: Pick<Payment, 'id' | 'email_sent' | 'email_sent_at' | 'email_attempts'> | null;
 }
 
-export type AgeGroup = 
-  | 'under-18'
-  | '18-29'
-  | '30-39'
-  | '40-49'
-  | '50-59'
-  | '60-plus';
+export type PhotoPreference = 'posed' | 'action' | 'both';
 
-export type RaceExperience = 
-  | 'first-time'
-  | 'beginner'
-  | 'intermediate'
-  | 'advanced'
-  | 'elite';
+export type SocialMediaPreference = 'posed' | 'action' | 'both' | 'neither';
 
-export type SatisfactionRating = 1 | 2 | 3 | 4 | 5;
+export type WillPose = 'yes' | 'maybe' | 'no';
+
+export type PricePreference = '5-9' | '10-14' | '15-19' | '20-24' | '25+';
+
+export type BuyImmediately = 'yes' | 'no';

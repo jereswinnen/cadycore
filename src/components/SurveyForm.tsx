@@ -6,8 +6,11 @@ import { z } from "zod";
 import {
   SurveyFormData,
   SurveyFormInput,
-  AgeGroup,
-  RaceExperience,
+  PhotoPreference,
+  SocialMediaPreference,
+  WillPose,
+  PricePreference,
+  BuyImmediately,
 } from "@/types";
 import { validateEmail } from "@/lib/utils";
 
@@ -20,21 +23,11 @@ const surveySchema = z.object({
     .string()
     .min(1, "Email is required")
     .refine(validateEmail, "Invalid email format"),
-  age_group: z.string().min(1, "Age group is required"),
-  race_experience: z.string().min(1, "Race experience is required"),
-  satisfaction_rating: z
-    .string()
-    .min(1, "Rating is required")
-    .refine((val) => {
-      const num = parseInt(val, 10);
-      return !isNaN(num) && num >= 1 && num <= 5;
-    }, "Rating must be between 1 and 5"),
-  would_recommend: z.boolean(),
-  feedback: z
-    .string()
-    .max(500, "Feedback must be less than 500 characters")
-    .optional(),
-  marketing_consent: z.boolean(),
+  photo_preference: z.string().min(1, "Photo preference is required"),
+  social_media_preference: z.string().min(1, "Social media preference is required"),
+  will_pose: z.string().min(1, "This field is required"),
+  price_preference: z.string().min(1, "Price preference is required"),
+  buy_immediately: z.string().min(1, "This field is required"),
 });
 
 interface SurveyFormProps {
@@ -43,21 +36,36 @@ interface SurveyFormProps {
   error?: string;
 }
 
-const ageGroups: { value: AgeGroup; label: string }[] = [
-  { value: "under-18", label: "Under 18" },
-  { value: "18-29", label: "18-29" },
-  { value: "30-39", label: "30-39" },
-  { value: "40-49", label: "40-49" },
-  { value: "50-59", label: "50-59" },
-  { value: "60-plus", label: "60+" },
+const photoPreferences: { value: PhotoPreference; label: string }[] = [
+  { value: "posed", label: "Posed" },
+  { value: "action", label: "Action" },
+  { value: "both", label: "Both" },
 ];
 
-const raceExperiences: { value: RaceExperience; label: string }[] = [
-  { value: "first-time", label: "First time racer" },
-  { value: "beginner", label: "Beginner (1-3 races)" },
-  { value: "intermediate", label: "Intermediate (4-10 races)" },
-  { value: "advanced", label: "Advanced (11+ races)" },
-  { value: "elite", label: "Elite/Competitive" },
+const socialMediaPreferences: { value: SocialMediaPreference; label: string }[] = [
+  { value: "posed", label: "Posed" },
+  { value: "action", label: "Action" },
+  { value: "both", label: "Both" },
+  { value: "neither", label: "Neither" },
+];
+
+const willPoseOptions: { value: WillPose; label: string }[] = [
+  { value: "yes", label: "Yes" },
+  { value: "maybe", label: "Maybe" },
+  { value: "no", label: "No" },
+];
+
+const pricePreferences: { value: PricePreference; label: string }[] = [
+  { value: "5-9", label: "$5-9" },
+  { value: "10-14", label: "$10-14" },
+  { value: "15-19", label: "$15-19" },
+  { value: "20-24", label: "$20-24" },
+  { value: "25+", label: "$25+" },
+];
+
+const buyImmediatelyOptions: { value: BuyImmediately; label: string }[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
 ];
 
 export default function SurveyForm({
@@ -72,19 +80,17 @@ export default function SurveyForm({
     formState: { errors },
   } = useForm<SurveyFormInput>({
     resolver: zodResolver(surveySchema),
-    defaultValues: {
-      marketing_consent: false,
-      would_recommend: true,
-    },
   });
 
   const watchedFields = watch();
   const isFormValid =
     watchedFields.runner_name?.trim() &&
     watchedFields.runner_email?.trim() &&
-    watchedFields.age_group &&
-    watchedFields.race_experience &&
-    watchedFields.satisfaction_rating;
+    watchedFields.photo_preference &&
+    watchedFields.social_media_preference &&
+    watchedFields.will_pose &&
+    watchedFields.price_preference &&
+    watchedFields.buy_immediately;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -93,7 +99,11 @@ export default function SurveyForm({
           onSubmit={handleSubmit((data) => {
             const formData: SurveyFormData = {
               ...data,
-              satisfaction_rating: parseInt(data.satisfaction_rating, 10),
+              photo_preference: data.photo_preference as PhotoPreference,
+              social_media_preference: data.social_media_preference as SocialMediaPreference,
+              will_pose: data.will_pose as WillPose,
+              price_preference: data.price_preference as PricePreference,
+              buy_immediately: data.buy_immediately as BuyImmediately,
             };
             onSubmit(formData);
           })}
@@ -145,163 +155,149 @@ export default function SurveyForm({
             )}
           </div>
 
-          {/* Age Group */}
+          {/* Photo Preference */}
           <div>
             <label
-              htmlFor="age_group"
+              htmlFor="photo_preference"
               className="block text-sm font-medium mb-2"
               style={{ color: "var(--text-primary)" }}
             >
-              Age Group *
+              Posed or action, what's your favorite? *
             </label>
             <select
-              id="age_group"
-              {...register("age_group")}
+              id="photo_preference"
+              {...register("photo_preference")}
               className="input"
               disabled={loading}
             >
-              <option value="">Select your age group</option>
-              {ageGroups.map((group) => (
-                <option key={group.value} value={group.value}>
-                  {group.label}
+              <option value="">Select preference</option>
+              {photoPreferences.map((pref) => (
+                <option key={pref.value} value={pref.value}>
+                  {pref.label}
                 </option>
               ))}
             </select>
-            {errors.age_group && (
+            {errors.photo_preference && (
               <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.age_group.message}
+                {errors.photo_preference.message}
               </p>
             )}
           </div>
 
-          {/* Race Experience */}
+          {/* Social Media Preference */}
           <div>
             <label
-              htmlFor="race_experience"
+              htmlFor="social_media_preference"
               className="block text-sm font-medium mb-2"
               style={{ color: "var(--text-primary)" }}
             >
-              Race Experience *
+              Which would you share on social media? *
             </label>
             <select
-              id="race_experience"
-              {...register("race_experience")}
+              id="social_media_preference"
+              {...register("social_media_preference")}
               className="input"
               disabled={loading}
             >
-              <option value="">Select your experience level</option>
-              {raceExperiences.map((exp) => (
-                <option key={exp.value} value={exp.value}>
-                  {exp.label}
+              <option value="">Select preference</option>
+              {socialMediaPreferences.map((pref) => (
+                <option key={pref.value} value={pref.value}>
+                  {pref.label}
                 </option>
               ))}
             </select>
-            {errors.race_experience && (
+            {errors.social_media_preference && (
               <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.race_experience.message}
+                {errors.social_media_preference.message}
               </p>
             )}
           </div>
 
-          {/* Satisfaction Rating */}
+          {/* Will Pose */}
           <div>
             <label
+              htmlFor="will_pose"
               className="block text-sm font-medium mb-2"
               style={{ color: "var(--text-primary)" }}
             >
-              How satisfied are you with today's race? *
+              Will you stop 30 seconds to pose? *
             </label>
-            <div className="flex space-x-4">
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <label key={rating} className="flex items-center">
-                  <input
-                    type="radio"
-                    value={rating}
-                    {...register("satisfaction_rating")}
-                    className="mr-2 accent-[var(--primary)]"
-                    disabled={loading}
-                  />
-                  <span
-                    className="text-sm"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    {rating}
-                  </span>
-                </label>
-              ))}
-            </div>
-            <p
-              className="text-xs mt-1"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              1 = Very Dissatisfied, 5 = Very Satisfied
-            </p>
-            {errors.satisfaction_rating && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.satisfaction_rating.message}
-              </p>
-            )}
-          </div>
-
-          {/* Would Recommend */}
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                {...register("would_recommend")}
-                className="mr-2 accent-[var(--primary)]"
-                disabled={loading}
-              />
-              <span
-                className="text-sm"
-                style={{ color: "var(--text-primary)" }}
-              >
-                I would recommend this race to others
-              </span>
-            </label>
-          </div>
-
-          {/* Feedback */}
-          <div>
-            <label
-              htmlFor="feedback"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Additional Feedback (Optional)
-            </label>
-            <textarea
-              id="feedback"
-              {...register("feedback")}
-              rows={3}
+            <select
+              id="will_pose"
+              {...register("will_pose")}
               className="input"
-              placeholder="Share any additional thoughts about your race experience..."
               disabled={loading}
-            />
-            {errors.feedback && (
+            >
+              <option value="">Select answer</option>
+              {willPoseOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.will_pose && (
               <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.feedback.message}
+                {errors.will_pose.message}
               </p>
             )}
           </div>
 
-          {/* Marketing Consent */}
+          {/* Price Preference */}
           <div>
-            <label className="flex items-start">
-              <input
-                type="checkbox"
-                {...register("marketing_consent")}
-                className="mr-2 mt-1 accent-[var(--primary)]"
-                disabled={loading}
-              />
-              <span
-                className="text-sm"
-                style={{ color: "var(--text-primary)" }}
-              >
-                I agree to receive marketing communications about future races
-                and events
-              </span>
+            <label
+              htmlFor="price_preference"
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              What price feels fair for one photo? *
             </label>
+            <select
+              id="price_preference"
+              {...register("price_preference")}
+              className="input"
+              disabled={loading}
+            >
+              <option value="">Select price range</option>
+              {pricePreferences.map((pref) => (
+                <option key={pref.value} value={pref.value}>
+                  {pref.label}
+                </option>
+              ))}
+            </select>
+            {errors.price_preference && (
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                {errors.price_preference.message}
+              </p>
+            )}
+          </div>
+
+          {/* Buy Immediately */}
+          <div>
+            <label
+              htmlFor="buy_immediately"
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Would you buy if ready immediately? *
+            </label>
+            <select
+              id="buy_immediately"
+              {...register("buy_immediately")}
+              className="input"
+              disabled={loading}
+            >
+              <option value="">Select answer</option>
+              {buyImmediatelyOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.buy_immediately && (
+              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                {errors.buy_immediately.message}
+              </p>
+            )}
           </div>
 
           {error && (

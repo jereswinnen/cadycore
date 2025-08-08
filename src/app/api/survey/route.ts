@@ -10,17 +10,17 @@ export async function POST(request: NextRequest) {
       selected_photo_ids,
       runner_name,
       runner_email,
-      age_group,
-      race_experience,
-      satisfaction_rating,
-      would_recommend,
-      feedback,
-      marketing_consent
+      photo_preference,
+      social_media_preference,
+      will_pose,
+      price_preference,
+      buy_immediately
     }: SurveySubmissionData & { bib_number: string } = body;
 
     // Validate required fields
     if (!bib_number || !Array.isArray(selected_photo_ids) || selected_photo_ids.length === 0 || 
-        !runner_name || !runner_email || !age_group || !race_experience || !satisfaction_rating) {
+        !runner_name || !runner_email || !photo_preference || !social_media_preference || 
+        !will_pose || !price_preference || !buy_immediately) {
       return NextResponse.json({
         success: false,
         error: 'Missing required fields'
@@ -77,12 +77,11 @@ export async function POST(request: NextRequest) {
         selected_photo_ids: selected_photo_ids,
         runner_name,
         runner_email,
-        age_group,
-        race_experience,
-        satisfaction_rating,
-        would_recommend,
-        feedback: feedback || null,
-        marketing_consent: marketing_consent || false
+        photo_preference,
+        social_media_preference,
+        will_pose,
+        price_preference,
+        buy_immediately
       })
       .select()
       .single();
