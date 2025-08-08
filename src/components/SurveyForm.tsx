@@ -109,53 +109,86 @@ export default function SurveyForm({
           })}
           className="space-y-6"
         >
-          {/* Name */}
-          <div>
-            <label
-              htmlFor="runner_name"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Full Name *
-            </label>
-            <input
-              type="text"
-              id="runner_name"
-              {...register("runner_name")}
-              className="input"
-              disabled={loading}
-            />
-            {errors.runner_name && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.runner_name.message}
-              </p>
-            )}
+          {/* Personal Information Section */}
+          <div className="space-y-6">
+            <div className="flex">
+              <span 
+                className="text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full text-white"
+                style={{ 
+                  background: "linear-gradient(135deg, #bb4a92 0%, #3e6bdc 100%)"
+                }}
+              >
+                Personal Details
+              </span>
+            </div>
+            {/* Name */}
+            <div>
+              <label
+                htmlFor="runner_name"
+                className="block text-sm font-medium mb-2"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Full Name *
+              </label>
+              <input
+                type="text"
+                id="runner_name"
+                {...register("runner_name")}
+                className="input"
+                disabled={loading}
+              />
+              {errors.runner_name && (
+                <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                  {errors.runner_name.message}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="runner_email"
+                className="block text-sm font-medium mb-2"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Email Address *
+              </label>
+              <input
+                type="email"
+                id="runner_email"
+                {...register("runner_email")}
+                className="input"
+                disabled={loading}
+              />
+              {errors.runner_email && (
+                <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                  {errors.runner_email.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="runner_email"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Email Address *
-            </label>
-            <input
-              type="email"
-              id="runner_email"
-              {...register("runner_email")}
-              className="input"
-              disabled={loading}
+          {/* Divider */}
+          <div className="my-8">
+            <div 
+              className="w-full border-t-2"
+              style={{ borderColor: "var(--border)" }}
             />
-            {errors.runner_email && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.runner_email.message}
-              </p>
-            )}
           </div>
 
-          {/* Photo Preference */}
+          {/* Survey Questions Section */}
+          <div className="space-y-6">
+            <div className="flex">
+              <span 
+                className="text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full text-white"
+                style={{ 
+                  background: "linear-gradient(135deg, #bb4a92 0%, #3e6bdc 100%)"
+                }}
+              >
+                Quick Survey
+              </span>
+            </div>
+            {/* Photo Preference */}
           <div>
             <label
               htmlFor="photo_preference"
@@ -298,6 +331,7 @@ export default function SurveyForm({
                 {errors.buy_immediately.message}
               </p>
             )}
+          </div>
           </div>
 
           {error && (
