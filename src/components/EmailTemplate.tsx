@@ -118,22 +118,6 @@ export function PhotoDeliveryEmailTemplate({
               </div>
             )}
 
-            <div style={{
-              borderTop: '1px solid #e2e8f0',
-              paddingTop: '25px',
-              fontSize: '14px',
-              color: '#64748b'
-            }}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>
-                ℹ️ Important Information:
-              </h4>
-              <ul style={{ paddingLeft: '20px', margin: '0' }}>
-                <li>These are your final high-resolution photos</li>
-                <li>Images are perfect for printing and sharing</li>
-                <li>Please save the ZIP file to a safe location</li>
-                <li>If you have any issues, please contact our support team</li>
-              </ul>
-            </div>
           </div>
 
           {/* Footer */}
@@ -229,17 +213,6 @@ export function generatePhotoDeliveryEmail(props: EmailTemplateProps): string {
       </div>
       ` : ''}
 
-      <div style="border-top: 1px solid #e2e8f0; padding-top: 25px; font-size: 14px; color: #64748b;">
-        <h4 style="margin: 0 0 10px 0; color: #1e293b;">
-          ℹ️ Important Information:
-        </h4>
-        <ul style="padding-left: 20px; margin: 0;">
-          <li>These are your final high-resolution photos</li>
-          <li>Images are perfect for printing and sharing</li>
-          <li>Please save the ZIP file to a safe location</li>
-          <li>If you have any issues, please contact our support team</li>
-        </ul>
-      </div>
     </div>
 
     <!-- Footer -->

@@ -26,18 +26,44 @@ ALTER TABLE survey_responses
   ADD COLUMN IF NOT EXISTS price_preference VARCHAR(50),
   ADD COLUMN IF NOT EXISTS buy_immediately VARCHAR(50);
 
--- Add constraints for the new columns
-ALTER TABLE survey_responses
-  ADD CONSTRAINT check_photo_preference 
-    CHECK (photo_preference IN ('posed', 'action', 'both')),
-  ADD CONSTRAINT check_social_media_preference 
-    CHECK (social_media_preference IN ('posed', 'action', 'both', 'neither')),
-  ADD CONSTRAINT check_will_pose 
-    CHECK (will_pose IN ('yes', 'maybe', 'no')),
-  ADD CONSTRAINT check_price_preference 
-    CHECK (price_preference IN ('5-9', '10-14', '15-19', '20-24', '25+')),
-  ADD CONSTRAINT check_buy_immediately 
-    CHECK (buy_immediately IN ('yes', 'no'));
+-- Add constraints for the new columns (with existence checks)
+DO $$
+BEGIN
+    -- Add photo_preference constraint
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_photo_preference') THEN
+        ALTER TABLE survey_responses
+        ADD CONSTRAINT check_photo_preference 
+          CHECK (photo_preference IN ('posed', 'action', 'both'));
+    END IF;
+    
+    -- Add social_media_preference constraint
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_social_media_preference') THEN
+        ALTER TABLE survey_responses
+        ADD CONSTRAINT check_social_media_preference 
+          CHECK (social_media_preference IN ('posed', 'action', 'both', 'neither'));
+    END IF;
+    
+    -- Add will_pose constraint
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_will_pose') THEN
+        ALTER TABLE survey_responses
+        ADD CONSTRAINT check_will_pose 
+          CHECK (will_pose IN ('yes', 'maybe', 'no'));
+    END IF;
+    
+    -- Add price_preference constraint
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_price_preference') THEN
+        ALTER TABLE survey_responses
+        ADD CONSTRAINT check_price_preference 
+          CHECK (price_preference IN ('5-9', '10-14', '15-19', '20-24', '25+'));
+    END IF;
+    
+    -- Add buy_immediately constraint
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_buy_immediately') THEN
+        ALTER TABLE survey_responses
+        ADD CONSTRAINT check_buy_immediately 
+          CHECK (buy_immediately IN ('yes', 'no'));
+    END IF;
+END $$;
 
 -- Add email tracking columns to payments table if they don't exist
 DO $$
