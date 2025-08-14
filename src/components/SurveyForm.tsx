@@ -138,6 +138,13 @@ export default function SurveyForm({
                 className="input"
                 disabled={loading}
               />
+              <p
+                className="mt-2 text-sm"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                📸 Your high-resolution photos will be delivered to this email
+                address after purchase.
+              </p>
               {errors.runner_email && (
                 <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                   {errors.runner_email.message}
