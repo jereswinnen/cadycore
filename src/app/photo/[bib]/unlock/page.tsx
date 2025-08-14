@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import SurveyForm from "@/components/SurveyForm";
 import PhotoDisplay from "@/components/PhotoDisplay";
+import Logo from "@/components/Logo";
 import { PhotosWithSelections, SurveyFormData } from "@/types";
 import { formatPrice } from "@/lib/pricing";
 
@@ -221,14 +222,7 @@ export default function UnlockPage({ params }: UnlockPageProps) {
       <div className="container mx-auto px-6 py-12">
         {/* Logo */}
         <div className="flex justify-center mb-12">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={200}
-            height={67}
-            className="h-20 w-auto"
-            priority
-          />
+          <Logo priority />
         </div>
         {/* Header */}
         <div className="max-w-4xl mx-auto mb-12">

@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import PhotoGallery from '@/components/PhotoGallery';
+import Logo from '@/components/Logo';
 import { PhotosWithSelections } from '@/types';
 import { usePhotoSelection } from '@/hooks/usePhotoSelection';
 
@@ -111,14 +112,7 @@ export default function PhotoPage({ params }: PhotoPageProps) {
       <div className="container mx-auto px-6 py-12">
         {/* Logo */}
         <div className="flex justify-center mb-12">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={200}
-            height={67}
-            className="h-20 w-auto"
-            priority
-          />
+          <Logo priority />
         </div>
         
         {/* Header */}
