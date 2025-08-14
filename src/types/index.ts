@@ -16,11 +16,8 @@ export interface SurveyResponse {
   selected_photo_ids: string[];
   runner_name?: string;
   runner_email?: string;
-  photo_preference?: 'posed' | 'action' | 'both';
-  social_media_preference?: 'posed' | 'action' | 'both' | 'neither';
-  will_pose?: 'yes' | 'maybe' | 'no';
-  price_preference?: '5-9' | '10-14' | '15-19' | '20-24' | '25+';
-  buy_immediately?: 'yes' | 'no';
+  social_media_preference?: "posed" | "action";
+  waiting_stops_buying?: "yes" | "no";
   completed_at: string;
 }
 
@@ -34,7 +31,7 @@ export interface Payment {
   price_per_photo: number;
   total_amount: number;
   currency: string;
-  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  status: "pending" | "completed" | "failed" | "cancelled";
   created_at: string;
   completed_at?: string;
   email_sent?: boolean;
@@ -58,11 +55,8 @@ export interface PhotoAccess {
 export interface SurveyFormData {
   runner_name: string;
   runner_email: string;
-  photo_preference: 'posed' | 'action' | 'both';
-  social_media_preference: 'posed' | 'action' | 'both' | 'neither';
-  will_pose: 'yes' | 'maybe' | 'no';
-  price_preference: '5-9' | '10-14' | '15-19' | '20-24' | '25+';
-  buy_immediately: 'yes' | 'no';
+  social_media_preference: "posed" | "action";
+  waiting_stops_buying: "yes" | "no";
 }
 
 export interface SurveySubmissionData extends SurveyFormData {
@@ -72,11 +66,8 @@ export interface SurveySubmissionData extends SurveyFormData {
 export interface SurveyFormInput {
   runner_name: string;
   runner_email: string;
-  photo_preference: string;
   social_media_preference: string;
-  will_pose: string;
-  price_preference: string;
-  buy_immediately: string;
+  waiting_stops_buying: string;
 }
 
 export interface ApiResponse<T> {
@@ -112,15 +103,12 @@ export interface PhotosWithSelections {
   totalSelected: number;
   totalPrice: number;
   pricePerPhoto: number;
-  payment?: Pick<Payment, 'id' | 'email_sent' | 'email_sent_at' | 'email_attempts'> | null;
+  payment?: Pick<
+    Payment,
+    "id" | "email_sent" | "email_sent_at" | "email_attempts"
+  > | null;
 }
 
-export type PhotoPreference = 'posed' | 'action' | 'both';
+export type SocialMediaPreference = "posed" | "action";
 
-export type SocialMediaPreference = 'posed' | 'action' | 'both' | 'neither';
-
-export type WillPose = 'yes' | 'maybe' | 'no';
-
-export type PricePreference = '5-9' | '10-14' | '15-19' | '20-24' | '25+';
-
-export type BuyImmediately = 'yes' | 'no';
+export type WaitingStopsBuying = "yes" | "no";
