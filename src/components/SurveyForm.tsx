@@ -103,7 +103,7 @@ export default function SurveyForm({
             <div>
               <label
                 htmlFor="runner_name"
-                className="block text-sm font-medium mb-2"
+                className="block text-base sm:text-sm font-medium mb-2"
                 style={{ color: "var(--text-primary)" }}
               >
                 Full Name *
@@ -126,10 +126,10 @@ export default function SurveyForm({
             <div>
               <label
                 htmlFor="runner_email"
-                className="block text-sm font-medium mb-2"
+                className="block text-base sm:text-sm font-medium mb-2"
                 style={{ color: "var(--text-primary)" }}
               >
-                Email Address *
+                Email Photos To *
               </label>
               <input
                 type="email"
@@ -138,13 +138,6 @@ export default function SurveyForm({
                 className="input"
                 disabled={loading}
               />
-              <p
-                className="mt-2 text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                📸 Your high-resolution photos will be delivered to this email
-                address after purchase.
-              </p>
               {errors.runner_email && (
                 <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
                   {errors.runner_email.message}
@@ -163,21 +156,10 @@ export default function SurveyForm({
 
           {/* Survey Questions Section */}
           <div className="space-y-6">
-            <div className="flex">
-              <span
-                className="text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full text-white"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #bb4a92 0%, #3e6bdc 100%)",
-                }}
-              >
-                Quick Survey
-              </span>
-            </div>
             {/* Social Media Preference */}
             <div>
               <label
-                className="block text-sm font-medium mb-4"
+                className="block text-base sm:text-sm font-medium mb-4"
                 style={{ color: "var(--text-primary)" }}
               >
                 Which would you rather share on social media? *
@@ -186,7 +168,7 @@ export default function SurveyForm({
                 {socialMediaPreferences.map((pref) => (
                   <label
                     key={pref.value}
-                    className="flex flex-col items-center p-6 border rounded-xl cursor-pointer transition-all hover:bg-gray-50"
+                    className="flex flex-col items-center p-6 border-2 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02]"
                     style={{
                       borderColor:
                         watchedFields.social_media_preference === pref.value
@@ -194,8 +176,12 @@ export default function SurveyForm({
                           : "var(--border)",
                       backgroundColor:
                         watchedFields.social_media_preference === pref.value
-                          ? "rgba(187, 74, 146, 0.05)"
-                          : "transparent",
+                          ? "rgba(187, 74, 146, 0.08)"
+                          : "var(--secondary)",
+                      boxShadow:
+                        watchedFields.social_media_preference === pref.value
+                          ? "0 0 0 4px rgba(187, 74, 146, 0.1)"
+                          : "none",
                     }}
                   >
                     <input
@@ -215,7 +201,7 @@ export default function SurveyForm({
                       />
                       <div className="flex items-center space-x-3">
                         <div
-                          className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                          className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
                           style={{
                             borderColor:
                               watchedFields.social_media_preference ===
@@ -226,16 +212,21 @@ export default function SurveyForm({
                               watchedFields.social_media_preference ===
                               pref.value
                                 ? "var(--primary)"
-                                : "transparent",
+                                : "white",
+                            boxShadow:
+                              watchedFields.social_media_preference ===
+                              pref.value
+                                ? "0 0 0 2px rgba(187, 74, 146, 0.2)"
+                                : "none",
                           }}
                         >
                           {watchedFields.social_media_preference ===
                             pref.value && (
-                            <div className="w-2 h-2 rounded-full bg-white" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-white" />
                           )}
                         </div>
                         <span
-                          className="text-lg font-medium"
+                          className="text-base font-medium"
                           style={{ color: "var(--text-primary)" }}
                         >
                           {pref.label}
@@ -255,16 +246,16 @@ export default function SurveyForm({
             {/* Waiting Stops Buying */}
             <div>
               <label
-                className="block text-sm font-medium mb-4"
+                className="block text-base sm:text-sm font-medium mb-4"
                 style={{ color: "var(--text-primary)" }}
               >
                 Does waiting for race photos stop you from buying? *
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 {waitingStopsBuyingOptions.map((option) => (
                   <label
                     key={option.value}
-                    className="flex items-center justify-center p-6 border rounded-xl cursor-pointer transition-all hover:bg-gray-50"
+                    className="flex items-center justify-center p-6 border-2 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02]"
                     style={{
                       borderColor:
                         watchedFields.waiting_stops_buying === option.value
@@ -272,8 +263,12 @@ export default function SurveyForm({
                           : "var(--border)",
                       backgroundColor:
                         watchedFields.waiting_stops_buying === option.value
-                          ? "rgba(187, 74, 146, 0.05)"
-                          : "transparent",
+                          ? "rgba(187, 74, 146, 0.08)"
+                          : "var(--secondary)",
+                      boxShadow:
+                        watchedFields.waiting_stops_buying === option.value
+                          ? "0 0 0 4px rgba(187, 74, 146, 0.1)"
+                          : "none",
                     }}
                   >
                     <input
@@ -285,7 +280,7 @@ export default function SurveyForm({
                     />
                     <div className="flex items-center space-x-4">
                       <div
-                        className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                        className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
                         style={{
                           borderColor:
                             watchedFields.waiting_stops_buying === option.value
@@ -294,16 +289,20 @@ export default function SurveyForm({
                           backgroundColor:
                             watchedFields.waiting_stops_buying === option.value
                               ? "var(--primary)"
-                              : "transparent",
+                              : "white",
+                          boxShadow:
+                            watchedFields.waiting_stops_buying === option.value
+                              ? "0 0 0 2px rgba(187, 74, 146, 0.2)"
+                              : "none",
                         }}
                       >
                         {watchedFields.waiting_stops_buying ===
                           option.value && (
-                          <div className="w-2 h-2 rounded-full bg-white" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-white" />
                         )}
                       </div>
                       <span
-                        className="text-lg font-medium"
+                        className="text-base font-medium"
                         style={{ color: "var(--text-primary)" }}
                       >
                         {option.label}
