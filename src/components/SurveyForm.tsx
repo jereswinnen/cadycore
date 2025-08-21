@@ -193,11 +193,11 @@ export default function SurveyForm({
                     />
                     <div className="flex flex-col items-center space-y-4 w-full">
                       <Image
-                        src={`/surveyPreview${pref.value === "posed" ? "Posed" : "Action"}.jpg`}
+                        src={`/surveyExample${pref.value === "posed" ? "Posed" : "Action"}.jpeg`}
                         alt={`${pref.label} photo example`}
                         width={160}
-                        height={120}
-                        className="w-40 h-30 object-cover rounded-lg"
+                        height={190}
+                        className="w-40 h-50 object-cover rounded-lg"
                       />
                       <div className="flex items-center space-x-3">
                         <div
