@@ -16,12 +16,8 @@ export interface SurveyResponse {
   selected_photo_ids: string[];
   runner_name?: string;
   runner_email?: string;
-  age_group?: string;
-  race_experience?: string;
-  satisfaction_rating?: number;
-  would_recommend?: boolean;
-  feedback?: string;
-  marketing_consent: boolean;
+  social_media_preference?: "posed" | "action";
+  waiting_stops_buying?: "yes" | "no";
   completed_at: string;
 }
 
@@ -35,9 +31,12 @@ export interface Payment {
   price_per_photo: number;
   total_amount: number;
   currency: string;
-  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  status: "pending" | "completed" | "failed" | "cancelled";
   created_at: string;
   completed_at?: string;
+  email_sent?: boolean;
+  email_sent_at?: string;
+  email_attempts?: number;
 }
 
 export interface PhotoAccess {
@@ -56,12 +55,8 @@ export interface PhotoAccess {
 export interface SurveyFormData {
   runner_name: string;
   runner_email: string;
-  age_group: string;
-  race_experience: string;
-  satisfaction_rating: number;
-  would_recommend: boolean;
-  feedback?: string;
-  marketing_consent: boolean;
+  social_media_preference: "posed" | "action";
+  waiting_stops_buying: "yes" | "no";
 }
 
 export interface SurveySubmissionData extends SurveyFormData {
@@ -71,12 +66,8 @@ export interface SurveySubmissionData extends SurveyFormData {
 export interface SurveyFormInput {
   runner_name: string;
   runner_email: string;
-  age_group: string;
-  race_experience: string;
-  satisfaction_rating: string;
-  would_recommend: boolean;
-  feedback?: string;
-  marketing_consent: boolean;
+  social_media_preference: string;
+  waiting_stops_buying: string;
 }
 
 export interface ApiResponse<T> {
@@ -112,21 +103,12 @@ export interface PhotosWithSelections {
   totalSelected: number;
   totalPrice: number;
   pricePerPhoto: number;
+  payment?: Pick<
+    Payment,
+    "id" | "email_sent" | "email_sent_at" | "email_attempts"
+  > | null;
 }
 
-export type AgeGroup = 
-  | 'under-18'
-  | '18-29'
-  | '30-39'
-  | '40-49'
-  | '50-59'
-  | '60-plus';
+export type SocialMediaPreference = "posed" | "action";
 
-export type RaceExperience = 
-  | 'first-time'
-  | 'beginner'
-  | 'intermediate'
-  | 'advanced'
-  | 'elite';
-
-export type SatisfactionRating = 1 | 2 | 3 | 4 | 5;
+export type WaitingStopsBuying = "yes" | "no";

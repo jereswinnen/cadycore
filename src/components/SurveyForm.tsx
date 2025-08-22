@@ -3,11 +3,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Image from "next/image";
 import {
   SurveyFormData,
   SurveyFormInput,
-  AgeGroup,
-  RaceExperience,
+  SocialMediaPreference,
+  WaitingStopsBuying,
 } from "@/types";
 import { validateEmail } from "@/lib/utils";
 
@@ -20,21 +21,10 @@ const surveySchema = z.object({
     .string()
     .min(1, "Email is required")
     .refine(validateEmail, "Invalid email format"),
-  age_group: z.string().min(1, "Age group is required"),
-  race_experience: z.string().min(1, "Race experience is required"),
-  satisfaction_rating: z
+  social_media_preference: z
     .string()
-    .min(1, "Rating is required")
-    .refine((val) => {
-      const num = parseInt(val, 10);
-      return !isNaN(num) && num >= 1 && num <= 5;
-    }, "Rating must be between 1 and 5"),
-  would_recommend: z.boolean(),
-  feedback: z
-    .string()
-    .max(500, "Feedback must be less than 500 characters")
-    .optional(),
-  marketing_consent: z.boolean(),
+    .min(1, "Social media preference is required"),
+  waiting_stops_buying: z.string().min(1, "This field is required"),
 });
 
 interface SurveyFormProps {
@@ -43,21 +33,20 @@ interface SurveyFormProps {
   error?: string;
 }
 
-const ageGroups: { value: AgeGroup; label: string }[] = [
-  { value: "under-18", label: "Under 18" },
-  { value: "18-29", label: "18-29" },
-  { value: "30-39", label: "30-39" },
-  { value: "40-49", label: "40-49" },
-  { value: "50-59", label: "50-59" },
-  { value: "60-plus", label: "60+" },
+const socialMediaPreferences: {
+  value: SocialMediaPreference;
+  label: string;
+}[] = [
+  { value: "posed", label: "Posed" },
+  { value: "action", label: "Action" },
 ];
 
-const raceExperiences: { value: RaceExperience; label: string }[] = [
-  { value: "first-time", label: "First time racer" },
-  { value: "beginner", label: "Beginner (1-3 races)" },
-  { value: "intermediate", label: "Intermediate (4-10 races)" },
-  { value: "advanced", label: "Advanced (11+ races)" },
-  { value: "elite", label: "Elite/Competitive" },
+const waitingStopsBuyingOptions: {
+  value: WaitingStopsBuying;
+  label: string;
+}[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
 ];
 
 export default function SurveyForm({
@@ -72,19 +61,14 @@ export default function SurveyForm({
     formState: { errors },
   } = useForm<SurveyFormInput>({
     resolver: zodResolver(surveySchema),
-    defaultValues: {
-      marketing_consent: false,
-      would_recommend: true,
-    },
   });
 
   const watchedFields = watch();
   const isFormValid =
     watchedFields.runner_name?.trim() &&
     watchedFields.runner_email?.trim() &&
-    watchedFields.age_group &&
-    watchedFields.race_experience &&
-    watchedFields.satisfaction_rating;
+    watchedFields.social_media_preference &&
+    watchedFields.waiting_stops_buying;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -93,215 +77,246 @@ export default function SurveyForm({
           onSubmit={handleSubmit((data) => {
             const formData: SurveyFormData = {
               ...data,
-              satisfaction_rating: parseInt(data.satisfaction_rating, 10),
+              social_media_preference:
+                data.social_media_preference as SocialMediaPreference,
+              waiting_stops_buying:
+                data.waiting_stops_buying as WaitingStopsBuying,
             };
             onSubmit(formData);
           })}
           className="space-y-6"
         >
-          {/* Name */}
-          <div>
-            <label
-              htmlFor="runner_name"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Full Name *
-            </label>
-            <input
-              type="text"
-              id="runner_name"
-              {...register("runner_name")}
-              className="input"
-              disabled={loading}
-            />
-            {errors.runner_name && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.runner_name.message}
-              </p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="runner_email"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Email Address *
-            </label>
-            <input
-              type="email"
-              id="runner_email"
-              {...register("runner_email")}
-              className="input"
-              disabled={loading}
-            />
-            {errors.runner_email && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.runner_email.message}
-              </p>
-            )}
-          </div>
-
-          {/* Age Group */}
-          <div>
-            <label
-              htmlFor="age_group"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Age Group *
-            </label>
-            <select
-              id="age_group"
-              {...register("age_group")}
-              className="input"
-              disabled={loading}
-            >
-              <option value="">Select your age group</option>
-              {ageGroups.map((group) => (
-                <option key={group.value} value={group.value}>
-                  {group.label}
-                </option>
-              ))}
-            </select>
-            {errors.age_group && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.age_group.message}
-              </p>
-            )}
-          </div>
-
-          {/* Race Experience */}
-          <div>
-            <label
-              htmlFor="race_experience"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Race Experience *
-            </label>
-            <select
-              id="race_experience"
-              {...register("race_experience")}
-              className="input"
-              disabled={loading}
-            >
-              <option value="">Select your experience level</option>
-              {raceExperiences.map((exp) => (
-                <option key={exp.value} value={exp.value}>
-                  {exp.label}
-                </option>
-              ))}
-            </select>
-            {errors.race_experience && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.race_experience.message}
-              </p>
-            )}
-          </div>
-
-          {/* Satisfaction Rating */}
-          <div>
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              How satisfied are you with today's race? *
-            </label>
-            <div className="flex space-x-4">
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <label key={rating} className="flex items-center">
-                  <input
-                    type="radio"
-                    value={rating}
-                    {...register("satisfaction_rating")}
-                    className="mr-2 accent-[var(--primary)]"
-                    disabled={loading}
-                  />
-                  <span
-                    className="text-sm"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    {rating}
-                  </span>
-                </label>
-              ))}
+          {/* Personal Information Section */}
+          <div className="space-y-6">
+            <div className="flex">
+              <span
+                className="text-xs font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full text-white"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #bb4a92 0%, #3e6bdc 100%)",
+                }}
+              >
+                Personal Details
+              </span>
             </div>
-            <p
-              className="text-xs mt-1"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              1 = Very Dissatisfied, 5 = Very Satisfied
-            </p>
-            {errors.satisfaction_rating && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.satisfaction_rating.message}
-              </p>
-            )}
-          </div>
-
-          {/* Would Recommend */}
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                {...register("would_recommend")}
-                className="mr-2 accent-[var(--primary)]"
-                disabled={loading}
-              />
-              <span
-                className="text-sm"
+            {/* Name */}
+            <div>
+              <label
+                htmlFor="runner_name"
+                className="block text-base sm:text-sm font-medium mb-2"
                 style={{ color: "var(--text-primary)" }}
               >
-                I would recommend this race to others
-              </span>
-            </label>
+                Full Name *
+              </label>
+              <input
+                type="text"
+                id="runner_name"
+                {...register("runner_name")}
+                className="input"
+                disabled={loading}
+              />
+              {errors.runner_name && (
+                <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                  {errors.runner_name.message}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="runner_email"
+                className="block text-base sm:text-sm font-medium mb-2"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Email Photos To *
+              </label>
+              <input
+                type="email"
+                id="runner_email"
+                {...register("runner_email")}
+                className="input"
+                disabled={loading}
+              />
+              {errors.runner_email && (
+                <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                  {errors.runner_email.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Feedback */}
-          <div>
-            <label
-              htmlFor="feedback"
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Additional Feedback (Optional)
-            </label>
-            <textarea
-              id="feedback"
-              {...register("feedback")}
-              rows={3}
-              className="input"
-              placeholder="Share any additional thoughts about your race experience..."
-              disabled={loading}
+          {/* Divider */}
+          <div className="my-8">
+            <div
+              className="w-full border-t-2"
+              style={{ borderColor: "var(--border)" }}
             />
-            {errors.feedback && (
-              <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
-                {errors.feedback.message}
-              </p>
-            )}
           </div>
 
-          {/* Marketing Consent */}
-          <div>
-            <label className="flex items-start">
-              <input
-                type="checkbox"
-                {...register("marketing_consent")}
-                className="mr-2 mt-1 accent-[var(--primary)]"
-                disabled={loading}
-              />
-              <span
-                className="text-sm"
+          {/* Survey Questions Section */}
+          <div className="space-y-6">
+            {/* Social Media Preference */}
+            <div>
+              <label
+                className="block text-base sm:text-sm font-medium mb-4"
                 style={{ color: "var(--text-primary)" }}
               >
-                I agree to receive marketing communications about future races
-                and events
-              </span>
-            </label>
+                Which would you rather share on social media? *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {socialMediaPreferences.map((pref) => (
+                  <label
+                    key={pref.value}
+                    className="flex flex-col items-center p-6 border-2 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02]"
+                    style={{
+                      borderColor:
+                        watchedFields.social_media_preference === pref.value
+                          ? "var(--primary)"
+                          : "var(--border)",
+                      backgroundColor:
+                        watchedFields.social_media_preference === pref.value
+                          ? "rgba(187, 74, 146, 0.08)"
+                          : "var(--secondary)",
+                      boxShadow:
+                        watchedFields.social_media_preference === pref.value
+                          ? "0 0 0 4px rgba(187, 74, 146, 0.1)"
+                          : "none",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      value={pref.value}
+                      {...register("social_media_preference")}
+                      disabled={loading}
+                      className="sr-only"
+                    />
+                    <div className="flex flex-col items-center space-y-4 w-full">
+                      <Image
+                        src={`/surveyExample${pref.value === "posed" ? "Posed" : "Action"}.jpeg`}
+                        alt={`${pref.label} photo example`}
+                        width={160}
+                        height={190}
+                        className="w-40 h-50 object-cover rounded-lg"
+                      />
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
+                          style={{
+                            borderColor:
+                              watchedFields.social_media_preference ===
+                              pref.value
+                                ? "var(--primary)"
+                                : "var(--border)",
+                            backgroundColor:
+                              watchedFields.social_media_preference ===
+                              pref.value
+                                ? "var(--primary)"
+                                : "white",
+                            boxShadow:
+                              watchedFields.social_media_preference ===
+                              pref.value
+                                ? "0 0 0 2px rgba(187, 74, 146, 0.2)"
+                                : "none",
+                          }}
+                        >
+                          {watchedFields.social_media_preference ===
+                            pref.value && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <span
+                          className="text-base font-medium"
+                          style={{ color: "var(--text-primary)" }}
+                        >
+                          {pref.label}
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {errors.social_media_preference && (
+                <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                  {errors.social_media_preference.message}
+                </p>
+              )}
+            </div>
+
+            {/* Waiting Stops Buying */}
+            <div>
+              <label
+                className="block text-base sm:text-sm font-medium mb-4"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Does waiting for race photos stop you from buying? *
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                {waitingStopsBuyingOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex items-center justify-center p-6 border-2 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02]"
+                    style={{
+                      borderColor:
+                        watchedFields.waiting_stops_buying === option.value
+                          ? "var(--primary)"
+                          : "var(--border)",
+                      backgroundColor:
+                        watchedFields.waiting_stops_buying === option.value
+                          ? "rgba(187, 74, 146, 0.08)"
+                          : "var(--secondary)",
+                      boxShadow:
+                        watchedFields.waiting_stops_buying === option.value
+                          ? "0 0 0 4px rgba(187, 74, 146, 0.1)"
+                          : "none",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      value={option.value}
+                      {...register("waiting_stops_buying")}
+                      disabled={loading}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
+                        style={{
+                          borderColor:
+                            watchedFields.waiting_stops_buying === option.value
+                              ? "var(--primary)"
+                              : "var(--border)",
+                          backgroundColor:
+                            watchedFields.waiting_stops_buying === option.value
+                              ? "var(--primary)"
+                              : "white",
+                          boxShadow:
+                            watchedFields.waiting_stops_buying === option.value
+                              ? "0 0 0 2px rgba(187, 74, 146, 0.2)"
+                              : "none",
+                        }}
+                      >
+                        {watchedFields.waiting_stops_buying ===
+                          option.value && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                        )}
+                      </div>
+                      <span
+                        className="text-base font-medium"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {option.label}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {errors.waiting_stops_buying && (
+                <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>
+                  {errors.waiting_stops_buying.message}
+                </p>
+              )}
+            </div>
           </div>
 
           {error && (

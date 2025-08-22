@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { Photo } from '@/types';
+import Image from "next/image";
+import { Photo } from "@/types";
 
 interface PhotoPreviewProps {
   photo: Photo;
@@ -10,11 +10,11 @@ interface PhotoPreviewProps {
   isUnlocked?: boolean;
 }
 
-export default function PhotoPreview({ 
-  photo, 
-  showWatermark = true, 
+export default function PhotoPreview({
+  photo,
+  showWatermark = true,
   onUnlock,
-  isUnlocked = false 
+  isUnlocked = false,
 }: PhotoPreviewProps) {
   const imageUrl = isUnlocked ? photo.highres_url : photo.preview_url;
   const altText = `Race photo for bib number ${photo.bib_number}`;
@@ -30,21 +30,29 @@ export default function PhotoPreview({
           className="w-full h-auto object-cover"
           priority
         />
-        
+
         {showWatermark && !isUnlocked && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-black bg-opacity-50 text-white px-6 py-3 rounded-lg text-xl font-bold rotate-12 select-none">
-              PREVIEW
-            </div>
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: "url(/watermark.png)",
+                backgroundRepeat: "repeat",
+                backgroundSize: "80px 80px",
+                backgroundPosition: "center",
+                opacity: 0.3,
+                transform: "rotate(-15deg) scale(1.2)",
+              }}
+            />
           </div>
         )}
       </div>
-      
+
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600">
           Bib Number: <span className="font-medium">{photo.bib_number}</span>
         </p>
-        
+
         {!isUnlocked && onUnlock && (
           <button
             onClick={onUnlock}
@@ -53,11 +61,12 @@ export default function PhotoPreview({
             Get Full Photo - $10
           </button>
         )}
-        
+
         {isUnlocked && (
           <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-800 font-medium">
-              ✓ Photo unlocked! You can now download the high-resolution version.
+              ✓ Photo unlocked! You can now download the high-resolution
+              version.
             </p>
           </div>
         )}

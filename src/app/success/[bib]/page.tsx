@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Logo from "@/components/Logo";
 import { PhotoWithAccess } from "@/types";
 import PhotoDisplay from "@/components/PhotoDisplay";
 
@@ -23,6 +24,13 @@ export default function SuccessPage({ params }: SuccessPageProps) {
     null
   );
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<{
+    sent: boolean;
+    sending: boolean;
+    error?: string;
+    sentAt?: string;
+  }>({ sent: false, sending: false });
+  const [paymentId, setPaymentId] = useState<string | null>(null);
   const router = useRouter();
   const { bib } = use(params);
 
@@ -46,6 +54,16 @@ export default function SuccessPage({ params }: SuccessPageProps) {
           if (unlockedPhotos.length === 0) {
             setError("No unlocked photos found");
           }
+
+          // Check email status if payment data is available
+          if (data.data.payment) {
+            setPaymentId(data.data.payment.id);
+            setEmailStatus({
+              sent: data.data.payment.email_sent || false,
+              sending: false,
+              sentAt: data.data.payment.email_sent_at,
+            });
+          }
         } else {
           setError("Photos not found");
         }
@@ -58,6 +76,54 @@ export default function SuccessPage({ params }: SuccessPageProps) {
 
     fetchPhotos();
   }, [bib]);
+
+  const handleEmailPhotos = async () => {
+    if (!paymentId) {
+      alert("Payment information not available");
+      return;
+    }
+
+    setEmailStatus((prev) => ({ ...prev, sending: true, error: undefined }));
+
+    try {
+      const response = await fetch("/api/email/photos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          payment_id: paymentId,
+          force_resend: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setEmailStatus({
+          sent: true,
+          sending: false,
+          sentAt: new Date().toISOString(),
+        });
+        alert("Photos emailed successfully! Check your inbox.");
+      } else {
+        setEmailStatus((prev) => ({
+          ...prev,
+          sending: false,
+          error: data.error || "Failed to send email",
+        }));
+        alert(`Failed to send email: ${data.error || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Email error:", error);
+      setEmailStatus((prev) => ({
+        ...prev,
+        sending: false,
+        error: "Network error occurred",
+      }));
+      alert("Failed to send email. Please try again.");
+    }
+  };
 
   const handleDownload = async (photoId: string) => {
     setDownloadingPhotoId(photoId);
@@ -212,14 +278,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
         <div className="max-w-4xl mx-auto">
           {/* Logo */}
           <div className="flex justify-center mb-12">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={160}
-              height={53}
-              className="h-14 w-auto"
-              priority
-            />
+            <Logo priority />
           </div>
           {/* Success Message */}
           <div
@@ -300,7 +359,60 @@ export default function SuccessPage({ params }: SuccessPageProps) {
                 </button>
               )}
 
-{/* <button
+              <button
+                onClick={handleEmailPhotos}
+                disabled={emailStatus.sending}
+                className="btn font-semibold flex items-center justify-center"
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  backgroundColor: emailStatus.sent
+                    ? "var(--success)"
+                    : "var(--secondary)",
+                  color: emailStatus.sent ? "white" : "var(--text-primary)",
+                  opacity: emailStatus.sending ? "0.7" : "1",
+                }}
+              >
+                {emailStatus.sending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Sending Email...
+                  </>
+                ) : emailStatus.sent ? (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Email Sent ✓
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Email Photos
+                  </>
+                )}
+              </button>
+
+              {/* <button
                 onClick={() => router.push(`/photo/${bib}`)}
                 className="btn btn-secondary font-semibold"
                 style={{ padding: "0.75rem 1.5rem" }}
@@ -348,7 +460,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
           </div>
 
           {/* Purchase Summary */}
-          <div className="card p-8 mb-12">
+          <div className="hidden card p-8 mb-12">
             <h2
               className="text-2xl font-semibold mb-6"
               style={{ color: "var(--text-primary)" }}
@@ -413,7 +525,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
 
           {/* Additional Information */}
           <div
-            className="rounded-2xl p-8"
+            className="hidden rounded-2xl p-8"
             style={{
               background: "var(--secondary)",
               border: "1px solid var(--border)",
@@ -455,20 +567,18 @@ export default function SuccessPage({ params }: SuccessPageProps) {
                   className="w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0"
                   style={{ background: "var(--primary)" }}
                 ></span>
+                {emailStatus.sent
+                  ? `Photos were emailed to you${emailStatus.sentAt ? ` on ${new Date(emailStatus.sentAt).toLocaleDateString()}` : ""}`
+                  : 'Use the "Email Photos" button to receive photos via email'}
+              </li>
+              <li className="flex items-start">
+                <span
+                  className="w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0"
+                  style={{ background: "var(--primary)" }}
+                ></span>
                 Keep this page bookmarked for future reference
               </li>
             </ul>
-          </div>
-
-          {/* Navigation */}
-          <div className="mt-12 text-center">
-            <button
-              onClick={() => router.push("/")}
-              className="font-medium transition-colors"
-              style={{ color: "var(--primary)" }}
-            >
-              ← Search for Another Photo
-            </button>
           </div>
         </div>
       </div>

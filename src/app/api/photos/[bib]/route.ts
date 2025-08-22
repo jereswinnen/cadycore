@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { ApiResponse, PhotosWithSelections, PhotoWithAccess, PhotoSelection } from '@/types';
+import { ApiResponse, PhotosWithSelections, PhotoWithAccess } from '@/types';
 import { calculatePricePerPhoto, calculateTotalAmount } from '@/lib/pricing';
 
 export async function GET(
@@ -165,12 +165,24 @@ export async function GET(
     const pricePerPhoto = calculatePricePerPhoto(totalSelected);
     const totalPrice = calculateTotalAmount(totalSelected);
 
+    // Fetch payment information for email status (if exists)
+    const { data: payments } = await supabase
+      .from('payments')
+      .select('id, email_sent, email_sent_at, email_attempts')
+      .eq('bib_number', bibNumber)
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false })
+      .limit(1);
+    
+    const payment = payments && payments.length > 0 ? payments[0] : null;
+
     const response: PhotosWithSelections = {
       photos: photosWithSelections,
       selections: finalSelections || [],
       totalSelected,
       totalPrice,
-      pricePerPhoto
+      pricePerPhoto,
+      payment: payment || null
     };
 
     return NextResponse.json({

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import BibInput from "@/components/BibInput";
+import Logo from "@/components/Logo";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -81,15 +82,8 @@ export default function Home() {
           {/* Header */}
           <div className="mb-12 text-center lg:text-left">
             {/* Logo */}
-            <div className="flex justify-center lg:justify-start mb-8">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={160}
-                height={53}
-                className="h-14 w-auto"
-                priority
-              />
+            <div className="flex justify-center mb-8">
+              <Logo width={280} height={93} className="h-24 w-auto" priority />
             </div>
             <h1
               className="text-4xl sm:text-5xl font-bold mb-6"
